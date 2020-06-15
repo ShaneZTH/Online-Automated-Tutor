@@ -1,0 +1,15 @@
+# Secrets & Keys
+*/config.py
+
+# local database file
+#db.sqlite
+
+# Developing files
+*/README.md
+/README.md
+docs.md
+errors.md
+
+# Virtual Env
+env/*
+
