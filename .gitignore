@@ -1,12 +1,13 @@
 # Secrets & Keys
-*/config.py
+config.py
 
-# local database file
-#db.sqlite
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
 
 # Developing files
 */README.md
-/README.md
+README.md
 docs.md
 errors.md
 
