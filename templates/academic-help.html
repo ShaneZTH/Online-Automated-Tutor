@@ -124,25 +124,28 @@ Dashboard
                 <script>
                     function getBotResponse() {
                         var rawText = $("#textInput").val();
-                        var userHtml = '<p class="userText"><span>' + rawText + "</span></p>";
+                        var userQuestion = '<p class="userText"><span>' + rawText + "</span></p>";
                         $("#textInput").val("");
-                        $("#chatbox").append(userHtml);
+                        $("#chatbox").append(userQuestion);
                         document
                             .getElementById("userInput")
                             .scrollIntoView({block: "start", behavior: "smooth"});
 
+                        var mCourse = '{{course}}';
                         var settings = {
-                            "url": "https://api.wit.ai/message?v=20200613&q="+rawText,
-                            "method": "GET",
+                            "url": "/academic/api/v1/answer",
+                            "method": "POST",
                             "timeout": 0,
-                            "headers": {
-                                "Authorization": "Bearer RRSXJ7XJVXFYCDOVFETSL7GEOMAUSAYD"
+                            "data": {
+                                "course":mCourse,
+                                "question":userQuestion
                             },
                         };
 
+                        console.log("settings: ", settings);
                         $.ajax(settings).done(function (response) {
-                            console.log("rawText: ", rawText);
                             console.log("success!", response);
+
                             var botHtml = '<p class="botText"><span>' + response + "</span></p>";
                             $("#chatbox").append(botHtml);
                             document
