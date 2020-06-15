@@ -6,9 +6,12 @@ from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_restful import reqparse
+from bs4 import BeautifulSoup as soup
+import requests
 
 app = Flask(__name__)
-app.config.from_object('config')
+app.config.from_json('config.json',silent=False)
 
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
@@ -94,16 +97,6 @@ def logout():
 @login_required
 def academic_help():
     return render_template('choose.html', name=current_user.username)
-    # return render_template('academic-help.html', name=current_user.username)
-
-
-
-# @app.route('/academic/api/v1/set/<course>',methods=['GET','POST'])
-# @login_required
-# def set_course(course):
-#     print(course)
-#     # return render_template('dashboard.html', name=current_user.username)
-#     return redirect(url_for('dashboard'))
 
 @app.route('/academic/api/v1/<course>/help', methods=['GET','POST'])
 @login_required
@@ -118,13 +111,38 @@ def handle_course_selection(course):
         # TODO: render Q&A html
     return render_template('academic-help.html', name=current_user.username, course=course)
 
-@app.route('/academic/api/v1/academic/help', methods=['POST'])
+# Not needed at the moment
+def parse_arg_from_requests(arg, **kwargs):
+    parse = reqparse.RequestParser()
+    parse.add_argument(arg, **kwargs)
+    args = parse.parse_args()
+    return args[arg]
+
+@app.route('/academic/api/v1/answer', methods=['POST'])
 @login_required
-def get_academic_help():
-    data = request.json['data']
-    if data:
-        print(data)
-    pass
+def get_answer():
+    course = request.form['course']
+    question = request.form['question']
+    question_content = soup(question, 'html.parser').find('span').contents[0]
+    print(question_content)
+
+
+    WIT = app.config['WIT_APPS']
+    if course in WIT:
+        token = WIT[course]['Server_Access_Token']
+        v = WIT[course]['v']
+        url = 'https://api.wit.ai/message?v={0}&q={1}'.format(v, question_content)
+        headers = {
+            "Authorization": "Bearer " + token
+        }
+        response = requests.get(url=url, headers=headers)
+        print(response.text)
+        return response.text
+
+    else:
+        return "Some errors occurred!"
+
+    return course + " : " + question_content
 
 
 if __name__ == '__main__':
