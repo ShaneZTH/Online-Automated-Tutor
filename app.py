@@ -8,7 +8,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_restful import reqparse
 from bs4 import BeautifulSoup as soup
-import requests
+import requests, json
+from db import CSE109, CSE216, get_answer
 
 app = Flask(__name__)
 app.config.from_json('config.json',silent=False)
@@ -84,6 +85,10 @@ def signup():
 def dashboard():
     return render_template('dashboard.html', name=current_user.username)
 
+@app.route('/404')
+def error_404():
+    return render_template('404.html')
+
 @app.route('/logout')
 @login_required
 def logout():
@@ -98,6 +103,9 @@ def logout():
 def academic_help():
     return render_template('choose.html', name=current_user.username)
 
+#
+#   Direct user to the Q&A page, if & only if the course is offered
+#
 @app.route('/academic/api/v1/<course>/help', methods=['GET','POST'])
 @login_required
 def handle_course_selection(course):
@@ -105,10 +113,9 @@ def handle_course_selection(course):
     print("course_help: ", course)
     if course not in courses_offered:
         print("course not found")
-        return redirect(url_for('dashboard'))
-    else:
-        pass
-        # TODO: render Q&A html
+        return redirect(url_for('error_404'))
+        # TODO: Error handling should be improve
+
     return render_template('academic-help.html', name=current_user.username, course=course)
 
 # Not needed at the moment
@@ -118,14 +125,35 @@ def parse_arg_from_requests(arg, **kwargs):
     args = parse.parse_args()
     return args[arg]
 
+def parse_arg_from_wit(response):
+    r_json = json.loads(response)
+    entities = r_json['entities']
+    problems = subjects = errors = None
+    p_content = []
+    s_content = []
+    e_content = []
+    # TODO: add confidence check before appending
+    if 'problem:problem' in entities:
+        problems = entities['problem:problem']
+        for problem in problems:
+            p_content.append(problem['value'])
+    if 'subject:subject' in entities:
+        subjects = entities['subject:subject']
+        for subject in subjects:
+            s_content.append(subject['value'])
+    if 'error:error' in entities:
+        errors = entities['error:error']
+        for error in errors:
+            e_content.append(error['value'])
+    # print(p_content, s_content, e_content)
+    return p_content, s_content, e_content
+
 @app.route('/academic/api/v1/answer', methods=['POST'])
 @login_required
-def get_answer():
+def get_answer_handler():
     course = request.form['course']
     question = request.form['question']
     question_content = soup(question, 'html.parser').find('span').contents[0]
-    print(question_content)
-
 
     WIT = app.config['WIT_APPS']
     if course in WIT:
@@ -136,14 +164,17 @@ def get_answer():
             "Authorization": "Bearer " + token
         }
         response = requests.get(url=url, headers=headers)
-        print(response.text)
-        return response.text
 
+        # TODO: Working on Parsing response to different columns
+        problems, subjects, errors = parse_arg_from_wit(response.text)
+
+        return response.text
     else:
+        # TODO: Error handling should be improve
         return "Some errors occurred!"
 
     return course + " : " + question_content
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,port=5000)
