@@ -1,0 +1,190 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='dashboard.css')}}">
+{% endblock %}
+
+{% block content %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">Online Automated Tutor</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Profile</a></li>
+            <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="">Introduction of the site</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li><b>Available Bots</b></li>
+            <li><a href="\course\selection">Online Tutor Bot</a></li>
+            <li><a href="">Online Counselor Bot</a></li>
+          </ul>
+        </div>
+
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">Welcome, {{ name }}</h1>
+
+          <div class="row placeholders">
+            <div class="col-xs-6 col-sm-3 placeholder">
+              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+              <h4>Writer's Name</h4>
+              <span class="text-muted">Something else</span>
+            </div>
+            <div class="col-xs-6 col-sm-9 placeholder">
+              <div class="panel-group">
+                <div class="panel panel-default">
+                  <div class="panel-heading"><b>Message Subject</b></div>
+                  <div class="panel-body">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</div>
+                  <div class="panel-footer"><button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Respond</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal -->
+          <div id="myModal" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <h4 class="modal-title"><b>Message Subject</b></h4>
+                </div>
+                <div class="modal-body">
+                  <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</p>
+                  <div class="form-group">
+                    <label for="comment">Your Response:</label>
+                    <textarea class="form-control" rows="5" id="comment"></textarea>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" data-dismiss="modal">Respond</button>
+                  <button type="button" class="btn btn-basic" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="sub-header">Message History</h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Header</th>
+                  <th>Name</th>
+                  <th>Last Active</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>1,001</td>
+                  <td>Lorem</td>
+                  <td>ipsum</td>
+                  <td>dolor</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,002</td>
+                  <td>amet</td>
+                  <td>consectetur</td>
+                  <td>adipiscing</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>Integer</td>
+                  <td>nec</td>
+                  <td>odio</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,003</td>
+                  <td>libero</td>
+                  <td>Sed</td>
+                  <td>cursus</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,004</td>
+                  <td>dapibus</td>
+                  <td>diam</td>
+                  <td>Sed</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,005</td>
+                  <td>Nulla</td>
+                  <td>quis</td>
+                  <td>sem</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,006</td>
+                  <td>nibh</td>
+                  <td>elementum</td>
+                  <td>imperdiet</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,007</td>
+                  <td>sagittis</td>
+                  <td>ipsum</td>
+                  <td>Praesent</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,008</td>
+                  <td>Fusce</td>
+                  <td>nec</td>
+                  <td>tellus</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,009</td>
+                  <td>augue</td>
+                  <td>semper</td>
+                  <td>porta</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+                <tr>
+                  <td>1,010</td>
+                  <td>massa</td>
+                  <td>Vestibulum</td>
+                  <td>lacinia</td>
+                  <td><a href="#"></href>View Messages</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+{% endblock %}
