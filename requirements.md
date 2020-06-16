@@ -12,6 +12,7 @@ SQLAlchemy==1.3.17
 visitor==0.1.3
 Werkzeug==1.0.1
 WTForms==2.3.1
+requests==2.22.0
 
 ### Convert Swagger to python code
 swagger-py-codegen==0.4.0

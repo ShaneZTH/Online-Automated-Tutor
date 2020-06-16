@@ -9,19 +9,33 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_restful import reqparse
 from bs4 import BeautifulSoup as soup
 import requests, json
-from db import CSE109, CSE216, get_answer
+from db import get_answer
 
 app = Flask(__name__)
 app.config.from_json('config.json',silent=False)
 
+
 bootstrap = Bootstrap(app)
 db = SQLAlchemy(app)
+
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-courses_offered = ['CSE-109', 'CSE-216']
+courses_offered = {
+    'CSE-109': 'CSE109',
+    'CSE-216': 'CSE216'
+}
+
+
+class CSE109(db.Model):
+    __table_name__ = 'cse109'
+    id = db.Column(db.Integer, primary_key=True, unique=True)
+    problem = db.Column(db.String(50), default=None)
+    subject = db.Column(db.String(50), default=None)
+    error = db.Column(db.String(100), default=None)
+    answer = db.Column(db.String(5000), nullable=False)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,7 +56,6 @@ class RegisterForm(FlaskForm):
     email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
-
 
 @app.route('/')
 def index():
@@ -103,13 +116,13 @@ def logout():
 def academic_help():
     return render_template('choose.html', name=current_user.username)
 
-#
-#   Direct user to the Q&A page, if & only if the course is offered
-#
+# Direct user to the Q&A page, if & only if the course is offered
 @app.route('/academic/api/v1/<course>/help', methods=['GET','POST'])
 @login_required
 def handle_course_selection(course):
     global courses_offered
+
+    # TODO: log current action
     print("course_help: ", course)
     if course not in courses_offered:
         print("course not found")
@@ -118,17 +131,10 @@ def handle_course_selection(course):
 
     return render_template('academic-help.html', name=current_user.username, course=course)
 
-# Not needed at the moment
-def parse_arg_from_requests(arg, **kwargs):
-    parse = reqparse.RequestParser()
-    parse.add_argument(arg, **kwargs)
-    args = parse.parse_args()
-    return args[arg]
-
+# Extract values from wit response
 def parse_arg_from_wit(response):
     r_json = json.loads(response)
     entities = r_json['entities']
-    problems = subjects = errors = None
     p_content = []
     s_content = []
     e_content = []
@@ -148,10 +154,11 @@ def parse_arg_from_wit(response):
     # print(p_content, s_content, e_content)
     return p_content, s_content, e_content
 
+
 @app.route('/academic/api/v1/answer', methods=['POST'])
 @login_required
 def get_answer_handler():
-    course = request.form['course']
+    course = courses_offered[request.form['course']]
     question = request.form['question']
     question_content = soup(question, 'html.parser').find('span').contents[0]
 
@@ -165,12 +172,13 @@ def get_answer_handler():
         }
         response = requests.get(url=url, headers=headers)
 
-        # TODO: Working on Parsing response to different columns
         problems, subjects, errors = parse_arg_from_wit(response.text)
-
-        return response.text
+        answer = get_answer(course,problems,subjects,errors)
+        print(answer)
+        return answer
     else:
         # TODO: Error handling should be improve
+        # TODO: log current action
         return "Some errors occurred!"
 
     return course + " : " + question_content
@@ -178,3 +186,4 @@ def get_answer_handler():
 
 if __name__ == '__main__':
     app.run(debug=True,port=5000)
+
