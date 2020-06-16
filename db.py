@@ -70,30 +70,30 @@ def __prepare_query(problems, subjects, errors):
     if problems:
         if len(problems) > 1:
             for problem in problems[:-1]:
-                p += "{0} like '%{1}%' AND ".format(q_str['p'], problem)
-            p += "{0} like '%{1}%'".format(q_str['p'], problems[-1])
+                p += "LOWER({0}) like '%{1}%' AND ".format(q_str['p'], problem.lower())
+            p += "LOWER({0})like '%{1}%'".format(q_str['p'], problems[-1].lower())
         else:
-            p = "{0} is '{1}'".format(q_str['p'], problems[0])
+            p = "LOWER({0}) is '{1}'".format(q_str['p'], problems[0].lower())
     else:
         p = ""
 
     if subjects:
         if len(subjects) > 1:
             for subject in subjects[:-1]:
-                s += "{0} like '%{1}%' AND ".format(q_str['s'], subject)
-            s += "{0} like '%{1}%'".format(q_str['s'], subjects[-1])
+                s += "LOWER({0}) like '%{1}%' AND ".format(q_str['s'], subject.lower())
+            s += "LOWER({0}) like '%{1}%'".format(q_str['s'], subjects[-1].lower())
         else:
-            s = "{0} is '{1}'".format(q_str['s'], subjects[0])
+            s = "LOWER({0}) is '{1}'".format(q_str['s'], subjects[0].lower())
     else:
         s = ""
 
     if errors:
         if len(errors) > 1:
             for error in errors[:-1]:
-                e += "{0} like '%{1}%' AND ".format(q_str['e'], error)
-            e += "{0} like '%{1}%'".format(q_str['e'], errors[-1])
+                e += "LOWER({0}) like '%{1}%' AND ".format(q_str['e'], error.lower())
+            e += "LOWER({0}) like '%{1}%'".format(q_str['e'], errors[-1].lower())
         else:
-            e = "{0} is '{1}'".format(q_str['e'], errors[0])
+            e = "LOWER({0}) is '{1}'".format(q_str['e'], errors[0].lower())
     else:
         e = ""
 
