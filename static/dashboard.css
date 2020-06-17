@@ -127,3 +127,31 @@ body {
 .btn-div {
     padding-bottom: 10px;
 }
+
+/*
+ * Dashboard Archive
+ */
+#view-msg:hover {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/*
+ * Dashboard Modal
+ */
+
+.modal-content {
+  border-radius: 10px;
+}
+.modal-header {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+.modal-footer{
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.dropdown-item:hover{
+  cursor: pointer;
+}

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 {% extends "bootstrap/base.html" %}
 
 {% block title %}
@@ -6,7 +7,7 @@ Dashboard
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='academic-help.css')}}">
+<link rel="stylesheet" href="{{url_for('.static', filename='student_academic_dash.css')}}">
 
 {% endblock %}
 
@@ -39,12 +40,12 @@ Dashboard
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li ><a href="\dashboard">Overview </a></li>
+                <li ><a href="/dashboard">Overview </a></li>
                 <li><a href="">Introduction of the site</a></li>
             </ul>
             <ul class="nav nav-sidebar">
                 <li><b>Available Bots</b></li>
-                <li class="active"><a href="/course/selection">Online Tutor Bot <span class="sr-only">(current)</span></a></li>
+                <li class="active"><a href="/student/academic/dashboard">Online Tutor Bot <span class="sr-only">(current)</span></a></li>
                 <li><a href="">Online Counselor Bot</a></li>
             </ul>
         </div>
