@@ -184,7 +184,7 @@ def handle_course_selection(course):
         return redirect(url_for('error_404'))
         # TODO: Error handling should be improve
 
-    return render_template("academic-main.html", name=current_user.username, course=course)
+    return render_template("academic-main-v2.html", name=current_user.username, course=course)
 
 
 # Extract values from wit response
@@ -216,13 +216,12 @@ def parse_arg_from_wit(response):
 def get_answer_handler():
     course = courses_offered[request.form['course']]
     question = request.form['question']
-    question_content = soup(question, 'html.parser').find('span').contents[0]
 
     WIT = app.config['WIT_APPS']
     if course in WIT:
         token = WIT[course]['Server_Access_Token']
         v = WIT[course]['v']
-        url = 'https://api.wit.ai/message?v={0}&q={1}'.format(v, question_content)
+        url = 'https://api.wit.ai/message?v={0}&q={1}'.format(v, question)
         headers = {
             "Authorization": "Bearer " + token
         }
