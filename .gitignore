@@ -2,6 +2,12 @@
 config.py
 config.*
 
+# Database Files
+*.sqlite
+*.sql
+*/*.sqlite
+*/*.sql
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
