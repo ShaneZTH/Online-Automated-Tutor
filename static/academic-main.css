@@ -86,6 +86,7 @@ body {
  */
 
 .main {
+    float: left;
     padding: 15px;
 }
 
@@ -199,18 +200,18 @@ body {
 }
 
 .btn-c-submit {
-    background-color: #005faf; /* Blue */
-    border: none;
+    background-color: #1B73E7; /* Blue */
+    border: grey;
     position: relative;
     margin-top: 20px;
     color: white;
-    /*padding: 15px 32px;*/
+    padding: 32px 32px;
     text-align: center;
     /*text-decoration: none;*/
     display: inline-block;
     font-size: 14px;
     /*border-radius: 4px;*/
-    /*vertical-align: middle;*/
+    vertical-align: middle;
 }
 
 .btn-div {
