@@ -184,7 +184,7 @@ def handle_course_selection(course):
         return redirect(url_for('error_404'))
         # TODO: Error handling should be improve
 
-    return render_template("academic-main.html", name=current_user.username, course=course)
+    return render_template("academic-main-v2.html", name=current_user.username, course=course)
 
 
 # Extract values from wit response

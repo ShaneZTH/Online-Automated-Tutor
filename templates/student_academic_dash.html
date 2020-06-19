@@ -1,18 +1,10 @@
 <!DOCTYPE html>
-{% extends "bootstrap/base.html" %}
-
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>T</title>
-</head>
+{% extends "bootstrap/base.html" %}
 
 {% block styles %}
 {{super()}}
 <link rel="stylesheet" href="{{url_for('.static', filename='academic-main.css')}}">
-<style>
-
-</style>
 {% endblock %}
 
 {% block content %}
