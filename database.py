@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text
+from sqlalchemy import create_engine, Column, Integer, String, Text, TIMESTAMP, Boolean
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -19,6 +19,18 @@ q_str = {
     'e': "error"
 }
 
+# # Data Schema for pending questions
+# class Pending_Q(Base):
+#     id = Column(Integer, primary_key=True, unique=True)
+#     uid = Column(Integer)
+#     course = Column(String, default=None)
+#     problem = Column(String(200), default=None)
+#     timestamp = Column(TIMESTAMP, default=None)
+#     has_answered = Column(Boolean, default=False)
+#     has_seen = Column(Boolean, default=False)
+
+
+
 
 # Data model for CSE109
 class CSE109(Base):
@@ -29,8 +41,8 @@ class CSE109(Base):
     error = Column(String(100), default=None)
     answer = Column(String(5000), nullable=False)
 
-    def __init__(self, id, problem, subject, error, answer):
-        self.id = id
+    def __init__(self, _id, problem, subject, error, answer):
+        self.id = _id
         self.problem = problem
         self.subject = subject
         self.error = error
@@ -51,8 +63,8 @@ class CSE216(Base):
     error = Column(String(100), default=None)
     answer = Column(String(5000), nullable=False)
 
-    def __init__(self, id, problem, subject, error, answer):
-        self.id = id
+    def __init__(self, _id, problem, subject, error, answer):
+        self.id = _id
         self.problem = problem
         self.subject = subject
         self.error = error

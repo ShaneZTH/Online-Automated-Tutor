@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup as soup
 import requests
 import json
 from database import get_answer
+import dummy_gen as dg
 
 app = Flask(__name__)
 app.config.from_json('config.json', silent=False)
@@ -32,8 +33,27 @@ years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore',
                                                               'Sophomore'), ('junior', 'Junior'), ('senior', 'Senior'),
          ('N/A', 'N/A')]
 
+#
+# Generate desired amount of users into Users Database
+#
+def dummy_users_gen(num):
+    users = dg.users_gen(num)
+    with open('resources/users.txt', 'a+') as out:
+        for u in users:
+            line = json.dumps(u)
+            out.write(line + '\n')
+        out.close()
+
+    for u in users:
+        new_user = User(id=u[0], username=u[1], email=u[2], password=u[3], account_type=u[4], major=u[5], year=u[6])
+        # password = u[-1]
+        db.session.add(new_user)
+        db.session.commit()
+    print("{} users have been imported".format(len(users)))
+
 
 class User(UserMixin, db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(15), unique=True)
     email = db.Column(db.String(50), unique=True)
@@ -41,6 +61,7 @@ class User(UserMixin, db.Model):
     account_type = db.Column(db.String(30))
     major = db.Column(db.String(30))
     year = db.Column(db.String(15))
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -132,9 +153,11 @@ def dashboard():
     else:
         return render_template('student_dash_init.html', name=current_user.username)
 
+
 @app.route('/404')
 def error_404():
     return render_template('404.html')
+
 
 @app.route('/logout')
 @login_required
@@ -142,25 +165,28 @@ def logout():
     logout_user()
     return redirect(url_for('index'))
 
+
 # TODO: Hansen's part
 #  Router for when student selects emotional support upon logging in.
 @app.route('/emotional_support')
 @login_required
 def emotional_support():
-    if(current_user.account_type == 'counselor'):
+    if (current_user.account_type == 'counselor'):
         return redirect(url_for('dashboard'))
     else:
         return render_template('student_counseling_dash.html', name=current_user.username)
+
 
 # TODO:Taohan's part
 #  Router for when student selects academic tutor upon logging in.
 @app.route('/academic_tutor')
 @login_required
 def academic_tutor():
-    if(current_user.account_type == 'counselor'):
+    if (current_user.account_type == 'counselor'):
         return redirect(url_for('dashboard'))
     else:
         return render_template('student_academic_dash.html', name=current_user.username)
+
 
 #
 #   Let user choose which specific course to receive help from
