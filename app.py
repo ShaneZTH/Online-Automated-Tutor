@@ -1,7 +1,7 @@
 from flask import Flask, render_template, abort, redirect, url_for, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SelectField, SelectMultipleField
 from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -27,11 +27,13 @@ courses_offered = {
     'CSE-109': 'CSE109',
     'CSE-216': 'CSE216'
 }
-account_types = [('', ''), ('counselor', 'Counselor'),
+account_types = [('', 'Select your account type'), ('counselor', 'Counselor'),
                  ('student', 'Student'), ('tutor', 'Tutor')]
 years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore',
                                                               'Sophomore'), ('junior', 'Junior'), ('senior', 'Senior'),
          ('N/A', 'N/A')]
+majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('N/A', 'N/A')]
+courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('none', 'N/A')]
 
 #
 # Generate desired amount of users into Users Database
@@ -61,6 +63,7 @@ class User(UserMixin, db.Model):
     account_type = db.Column(db.String(30))
     major = db.Column(db.String(30))
     year = db.Column(db.String(15))
+    courses = db.Column(db.String(30))
 
 
 @login_manager.user_loader
@@ -85,10 +88,13 @@ class RegisterForm(FlaskForm):
         InputRequired(), Length(min=8, max=80)])
     account_type = SelectField(u'I am a...', choices=account_types, validators=[
         InputRequired()], default='')
-    major = StringField('Major', validators=[InputRequired()], render_kw={
-        "placeholder": "Enter your Major..."})
-    year = SelectField(u'Year', validators=[
-        InputRequired()], default='', choices=years)
+    year = SelectField(u'Year', validators=[InputRequired()],
+                       default='', choices=years)
+    major = SelectField(u'Major', validators=[InputRequired()],
+                        choices=majors)
+    # TODO: use 'selectMutipleField' instead
+    course = SelectField(u'Course(s)', validators=[InputRequired()],
+                                 choices=courses)
 
 
 @app.route('/')
@@ -122,23 +128,32 @@ def signup():
     if (form.account_type.data == 'counselor'):
         form.major.validators = []
         form.year.validators = []
+    if (form.account_type.data == 'tutor'):
+        form.major.validators = []
+        form.year.validators = []
+
     if form.validate_on_submit():
+        hashed_password = generate_password_hash(
+            form.password.data, method='sha256')
+
         # If user indicated counselor, leave major and year as null.
         if (form.account_type.data == 'counselor'):
-            hashed_password = generate_password_hash(
-                form.password.data, method='sha256')
             app.logger.info(form.major.data)
             new_user = User(username=form.username.data, email=form.email.data,
                             password=hashed_password, account_type=form.account_type.data)
-            db.session.add(new_user)
-            db.session.commit()
+            # db.session.add(new_user)
+            # db.session.commit()
+        elif (form.account_type.data == 'tutor'):
+            new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
+                            account_type=form.account_type.data, courses=form.course.data)
+            # db.session.add(new_user)
+            # db.session.commit()
         else:  # If not counselor, require major and year
-            hashed_password = generate_password_hash(
-                form.password.data, method='sha256')
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
                             account_type=form.account_type.data, major=form.major.data, year=form.year.data)
-            db.session.add(new_user)
-            db.session.commit()
+
+        db.session.add(new_user)
+        db.session.commit()
 
         login_user(new_user)
         return redirect(url_for('dashboard'))

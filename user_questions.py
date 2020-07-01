@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Text, TIMESTAMP, 
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
-engine = create_engine('sqlite:///pendingQ.sqlite', convert_unicode=True)
+engine = create_engine('sqlite:///user_questions.sqlite', convert_unicode=True)
 db_session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
@@ -21,7 +21,7 @@ q_str = {
 
 # Data Schema for pending questions
 class pendingQ(Base):
-    __tablename__ = "pending_q"
+    __tablename__ = "user_questions"
     id = Column(Integer, primary_key=True, unique=True)
     uid = Column(Integer)
     course = Column(String, default=None)

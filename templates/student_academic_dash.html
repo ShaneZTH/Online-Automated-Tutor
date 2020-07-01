@@ -8,6 +8,7 @@
 {% endblock %}
 
 {% block content %}
+<body onload="load_course()">
 <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
@@ -52,7 +53,8 @@
             <h2 class="sub-header">Chat with the Academic Helper</h2>
             <div>
                 <div class="panel-header">Choose the course you need help with</div>
-                <div class="btn-group-vertical" role="group" aria-label="Button group with nested dropdown">
+                <div class="btn-group-vertical" role="group" id="course-group"
+                     aria-label="Button group with nested dropdown">
                     <li><a href="/academic/api/v1/CSE-109/help">
                         <button type="button" class="btn btn-default">CSE 109</button>
                     </a></li>
@@ -75,4 +77,14 @@
         </div>
     </div>
 
-    {% endblock %}
+    <script>
+        function load_course() {
+
+            var new_course = "<li><a href=\"/academic/api/v1/CSE-109/help\">" +
+                "<button type=\"button\" class=\"btn btn-default\">CSE 000</button>" +
+                "</a></li>";
+            $("#course-group").append(new_course);
+        }
+    </script>
+</body>
+{% endblock %}
