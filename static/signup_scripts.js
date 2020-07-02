@@ -25,5 +25,7 @@ acct_select.onchange = function () {
         $('#major').removeAttr('disabled');
         $('#year').val('');
         $('#year').removeAttr('disabled');
+        $('#course').attr('disabled', 'disabled')
+        $('#course').val('')
     }
 }

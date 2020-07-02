@@ -121,6 +121,9 @@ def __prepare_query(problems, subjects, errors):
     print('prepared query statement: ', p, s, e)
     return p, s, e
 
+# TODO: Implement this to replace the method in app.py
+# def get_major_courses(course):
+#     pass
 
 # Connect with database to retrieve the answer
 def get_answer(course=None, problems=None, subjects=None, errors=None):

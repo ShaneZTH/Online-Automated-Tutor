@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, redirect, url_for, request
+from flask import Flask, render_template, abort, redirect, url_for, request, jsonify
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SelectField, SelectMultipleField
@@ -6,11 +6,10 @@ from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from flask_restful import reqparse
 from bs4 import BeautifulSoup as soup
 import requests
 import json
-from database import get_answer
+from knowledge import get_answer
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -25,15 +24,23 @@ login_manager.login_view = 'login'
 
 courses_offered = {
     'CSE-109': 'CSE109',
-    'CSE-216': 'CSE216'
+    'CSE-216': 'CSE216',
+    'ECE-033': 'ECE033',
+    'ECE-081': 'ECE081'
 }
+major_courses = [
+    {'major': 'cse', 'course': 'CSE109'},
+    {'major': 'cse', 'course': 'CSE216'},
+    {'major': 'ece', 'course': 'ECE033'},
+    {'major': 'ece', 'course': 'ECE081'}
+]
 account_types = [('', 'Select your account type'), ('counselor', 'Counselor'),
                  ('student', 'Student'), ('tutor', 'Tutor')]
 years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore',
                                                               'Sophomore'), ('junior', 'Junior'), ('senior', 'Senior'),
          ('N/A', 'N/A')]
 majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('N/A', 'N/A')]
-courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('none', 'N/A')]
+courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
 
 #
 # Generate desired amount of users into Users Database
@@ -69,7 +76,6 @@ class User(UserMixin, db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[
@@ -113,7 +119,13 @@ def login():
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
-                return redirect(url_for('dashboard'))
+
+                if user.account_type == 'student':
+                    major = user.major
+                else:
+                    major = None
+                print('User-{} login as {}, major={}\n'.format(user.id, user.account_type, major))
+                return redirect(url_for('dashboard', major=major))
 
         # TODO: "Incorrect Login" handling.
         return '<h1>Invalid username or password</h1>'
@@ -125,10 +137,7 @@ def login():
 def signup():
     form = RegisterForm()
     # If user indicated counselor, don't require major and year.
-    if (form.account_type.data == 'counselor'):
-        form.major.validators = []
-        form.year.validators = []
-    if (form.account_type.data == 'tutor'):
+    if (form.account_type.data == 'counselor' or form.account_type.data == 'tutor'):
         form.major.validators = []
         form.year.validators = []
 
@@ -136,19 +145,15 @@ def signup():
         hashed_password = generate_password_hash(
             form.password.data, method='sha256')
 
-        # If user indicated counselor, leave major and year as null.
+        # If user indicated counselor or tutor, leave major and year as null.
         if (form.account_type.data == 'counselor'):
             app.logger.info(form.major.data)
             new_user = User(username=form.username.data, email=form.email.data,
                             password=hashed_password, account_type=form.account_type.data)
-            # db.session.add(new_user)
-            # db.session.commit()
         elif (form.account_type.data == 'tutor'):
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
                             account_type=form.account_type.data, courses=form.course.data)
-            # db.session.add(new_user)
-            # db.session.commit()
-        else:  # If not counselor, require major and year
+        else:  # If student, require major and year
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
                             account_type=form.account_type.data, major=form.major.data, year=form.year.data)
 
@@ -157,6 +162,7 @@ def signup():
 
         login_user(new_user)
         return redirect(url_for('dashboard'))
+
     return render_template('signup.html', form=form)
 
 
@@ -257,7 +263,7 @@ def parse_arg_from_wit(response):
 def get_answer_handler():
     course = courses_offered[request.form['course']]
     question = request.form['question']
-
+    print("Question: " +  question)
     WIT = app.config['WIT_APPS']
     if course in WIT:
         token = WIT[course]['Server_Access_Token']
@@ -279,6 +285,19 @@ def get_answer_handler():
 
     return course + " : " + question_content
 
+@app.route('/academic/api/v1/major-courses', methods=['POST'])
+@login_required
+def get_major_courses():
+    # major = request.data['major']
+    # print(major)
+    js_data = request.get_json()
+    major = (str)(js_data["major"])
+    matched_data = list(filter(lambda c: c['major'] == major, major_courses))
+    res = []
+    for d in matched_data:
+        res.append(d['course'])
+
+    return jsonify({"courses": res})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
