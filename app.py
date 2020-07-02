@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup as soup
 import requests
 import json
 from knowledge import get_answer
+from user_questions import insert_question
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -276,14 +277,17 @@ def get_answer_handler():
 
         problems, subjects, errors = parse_arg_from_wit(response.text)
         answer = get_answer(course, problems, subjects, errors)
-        print(answer)
-        return answer
+        print('Log: get_answer_handler() - knowledge retrieved: {}'.format(answer))
+        if answer:
+            return answer
+        else:
+            insert_question(course=course, problem=question)
+            return 'Sorry, answer is not available. Please wait for a tutor to answer.'
     else:
         # TODO: Error handling should be improve
         # TODO: log current action
         return "Some errors occurred!"
 
-    return course + " : " + question_content
 
 @app.route('/academic/api/v1/major-courses', methods=['POST'])
 @login_required

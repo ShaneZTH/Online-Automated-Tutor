@@ -140,7 +140,9 @@ def get_answer(course=None, problems=None, subjects=None, errors=None):
         print('query_str: ', querystr)
     else:
         # TODO: log current action
-        return "Not a valid question [doesn't match any existing keyword]"
+        print('Error: get_answer() - No keyword found in\'{},{},{}\''.format(problems, subjects, errors))
+        # return "Not a valid question [doesn't match any existing keyword]"
+        return None
 
     # Connect the database
     with engine.connect() as conn:
@@ -153,7 +155,7 @@ def get_answer(course=None, problems=None, subjects=None, errors=None):
             ret = ret + tmp
         # TODO: log current action
 
-    return ret if ret else "Answer not found"
+    return ret if ret else None
 
 
 def init_db():

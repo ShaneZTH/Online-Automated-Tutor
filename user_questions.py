@@ -19,6 +19,11 @@ q_str = {
     'e': "error"
 }
 
+def insert_question(course=None, problem=None):
+    print('log: insert_question() - received course={}, problem={}'.format(course, problem))
+    pass
+
+
 # Data Schema for pending questions
 class pendingQ(Base):
     __tablename__ = "user_questions"
