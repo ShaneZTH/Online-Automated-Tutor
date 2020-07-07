@@ -103,6 +103,30 @@ class RegisterForm(FlaskForm):
     course = SelectField(u'Course(s)', validators=[InputRequired()],
                                  choices=courses)
 
+# @login_required
+@app.route('/academic/v1/user/<uid>/major-courses', methods=['GET'])
+def user_major_courses(uid):
+    major = _get_user_major(uid)
+    filter_courses = list(filter(lambda x: (x['major'] == major), major_courses))
+
+    courses = []
+    for c in filter_courses:
+        courses.append(c['course'])
+
+    print('User-{} [major={}]\n\tmajor courses: {}'.format(uid, major, courses))
+
+    return jsonify({"major-courses": courses})
+
+def _get_user_major(uid):
+    user = User.query.filter_by(id=uid).first()
+    if user.account_type == 'student':
+        major = user.major
+    else:
+        major = None
+
+    print('User-{}: major={}'.format(uid, major))
+    return major
+
 
 @app.route('/')
 def index():
