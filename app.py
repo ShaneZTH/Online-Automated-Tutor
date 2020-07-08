@@ -41,10 +41,10 @@ major_courses = [
 ]
 account_types = [('', 'Select your account type'), ('counselor', 'Counselor'),
                  ('student', 'Student'), ('tutor', 'Tutor')]
-years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore',
-                                                              'Sophomore'), ('junior', 'Junior'), ('senior', 'Senior'),
-         ('N/A', 'N/A')]
-majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('N/A', 'N/A')]
+years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore', 'Sophomore'),
+         ('junior', 'Junior'), ('senior', 'Senior'), ('N/A', 'N/A')]
+majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('ece', 'Electrical Engineering'),
+          ('N/A', 'N/A')]
 courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
 
 ######################################################################
@@ -55,8 +55,10 @@ courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE
 
 ######################################################################
 # @login_required
-@app.route('/academic/v1/user/<uid>/major-courses', methods=['GET'])
-def user_major_courses(uid):
+@app.route('/academic/v1/user/major-courses', methods=['GET'])
+def user_major_courses():
+    uid = current_user.id
+    print('uid = ', uid)
     major = _get_user_major(uid)
     filter_courses = list(filter(lambda x: (x['major'] == major), major_courses))
 
@@ -108,6 +110,7 @@ class User(UserMixin, db.Model):
     account_type = db.Column(db.String(30))
     major = db.Column(db.String(30))
     year = db.Column(db.String(15))
+    last_login = db.Column(db.String(25))
     courses = db.Column(db.String(30))
 
 
@@ -155,6 +158,7 @@ def login():
 
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
+        print('user: ', user)
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
@@ -163,11 +167,14 @@ def login():
                     major = user.major
                 else:
                     major = None
-                print('User-{} login as {}, major={}\n'.format(user.id, user.account_type, major))
+                print('[User:{}] login as {}, [major:{}]\n'.format(user.id, user.account_type, major))
                 return redirect(url_for('dashboard', major=major))
 
         # TODO: "Incorrect Login" handling.
         return '<h1>Invalid username or password</h1>'
+    else:
+        print('ERROR: login form is invalid ([username:{}]'.format(form.username.data))
+        flash_errors(form)
 
     return render_template('login.html', form=form)
 
@@ -179,11 +186,13 @@ def signup():
     if (form.account_type.data == 'counselor' or form.account_type.data == 'tutor'):
         form.major.validators = []
         form.year.validators = []
-
+    print(form.validate())
+    print(form.errors)
+    print(form.email.data, form.account_type.data, form.year.data, form.major.data, form.course.data)
     if form.validate_on_submit():
         hashed_password = generate_password_hash(
             form.password.data, method='sha256')
-
+        print('Adding [user:{}] as {}'.format(form.username.data, form.account_type.data))
         # If user indicated counselor or tutor, leave major and year as null.
         if (form.account_type.data == 'counselor'):
             app.logger.info(form.major.data)
@@ -201,8 +210,20 @@ def signup():
 
         login_user(new_user)
         return redirect(url_for('dashboard'))
-
+    else:
+        print('ERROR: signup form is invalid ([username:{}]'.format(form.username.data))
+        flash_errors(form)
     return render_template('signup.html', form=form)
+
+
+def flash_errors(form):
+    """Flashes form errors"""
+    for field, errors in form.errors.items():
+        for error in errors:
+            print(u"\tError in the %s field - %s" % (
+                getattr(form, field).label.text,
+                error
+            ), 'error')
 
 
 @app.route('/dashboard')
@@ -222,7 +243,9 @@ def error_404():
 @app.route('/logout')
 @login_required
 def logout():
+    print('User-{} logging out'.format(current_user.id))
     logout_user()
+
     return redirect(url_for('index'))
 
 
@@ -239,25 +262,43 @@ def logout():
 
 # TODO:Taohan's part
 #  Router for when student selects academic tutor upon logging in.
+######################################################################
+# Academic Dashboard Redirection
+######################################################################
 @app.route('/academic_tutor')
 @login_required
 def academic_tutor():
     if (current_user.account_type == 'counselor'):
         return redirect(url_for('dashboard'))
     else:
-        return render_template('student_academic_dash.html', name=current_user.username)
+        if (current_user.account_type == 'tutor'):
+            # return render_template('tutor_academic_dash.html', name=current_user.username)
+            return redirect(url_for('tutor_dash_redirect', name=current_user.username))
+        elif (current_user.account_type == 'student'):
+            # return render_template('student_academic_dash.html', name=current_user.username)
+            return redirect(url_for('student_dash_redirect', name=current_user.username))
+        else:
+            print('ERROR: encounter errors when redirecting user with [type:{}]'.format(current_user.account_type))
+            return redirect(url_for('404'))
 
 
-#
-#   Let user choose which specific course to receive help from
-#
+# Go to TUTOR Dashboard
+@app.route('/tutor/academic/dashboard')
+@login_required
+def tutor_dash_redirect():
+    return render_template('tutor_academic_dash.html', name=current_user.username)
+
+
+# Go to STUDENT Dashboard
 @app.route('/student/academic/dashboard')
 @login_required
-def academic_help():
+def student_dash_redirect():
     return render_template('student_academic_dash.html', name=current_user.username)
 
 
-# Direct user to the Q&A page, if & only if the course is offered
+######################################################################
+# Direct STUDENT to the Q&A page, if & only if the course is offered
+######################################################################
 @app.route('/academic/api/v1/<course>/help', methods=['GET', 'POST'])
 @login_required
 def handle_course_selection(course):
@@ -297,6 +338,9 @@ def parse_arg_from_wit(response):
     return p_content, s_content, e_content
 
 
+######################################################################
+# Get answer for STUDENT's question
+######################################################################
 @app.route('/academic/api/v1/answer', methods=['POST'])
 @login_required
 def get_answer_handler():
@@ -326,6 +370,7 @@ def get_answer_handler():
     else:
         # TODO: Error handling should be improve
         # TODO: log current action
+        print('ERROR: [course:{}] does not exist in the system'.format(course))
         return "Some errors occurred!"
 
 
