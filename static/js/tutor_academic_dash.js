@@ -3,7 +3,7 @@
 // Load courses options based on USER's major
 window.onload = function load_course() {
     var settings = {
-        "url": "/academic/v1/user/97531419829/major-courses",
+        "url": "/academic/v1/user/major-courses",
         "method": "GET",
         "timeout": 0,
         "headers": {}

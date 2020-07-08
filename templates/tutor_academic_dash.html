@@ -50,9 +50,9 @@
 
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
-            <h2 class="sub-header">Chat with the Academic Helper</h2>
+            <h2 class="sub-header">Please help other students out</h2>
             <div>
-                <div class="panel-header">Choose the course you need help with</div>
+                <div class="panel-header">Choose the course you could help with</div>
                 <div class="btn-group-vertical" role="group" id="course-group"
                      aria-label="Button group with nested dropdown">
                 </div>
@@ -60,6 +60,6 @@
         </div>
     </div>
 
-        <script src="../static/js/tutor_academic_dash.js"></script>
+        <script src="{{ url_for('static', filename='js/tutor_academic_dash.js')}}"></script>
 </body>
 {% endblock %}

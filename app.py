@@ -73,7 +73,7 @@ def user_major_courses():
 
 def _get_user_major(uid):
     user = User.query.filter_by(id=uid).first()
-    if user.account_type == 'student':
+    if user.account_type == 'student' or user.account_type == 'tutor':
         major = user.major
     else:
         major = None
@@ -183,12 +183,24 @@ def login():
 def signup():
     form = RegisterForm()
     # If user indicated counselor, don't require major and year.
-    if (form.account_type.data == 'counselor' or form.account_type.data == 'tutor'):
+    if (form.account_type.data == 'counselor'):
         form.major.validators = []
         form.year.validators = []
-    print(form.validate())
-    print(form.errors)
-    print(form.email.data, form.account_type.data, form.year.data, form.major.data, form.course.data)
+        del form.major
+        del form.year
+        print('Validators for major & year has been deactivated')
+    elif (form.account_type.data == 'tutor'):
+        form.year.validators = []
+        del form.year
+        print('Validators for year has been deactivated')
+    elif (form.account_type.data == 'student'):
+        form.course.validators = []
+        del form.course
+        print('Validators for course has been deactivated')
+
+    # print(form.validate())
+    # print(form.email.data, form.account_type.data, form.year.data, form.major.data, form.course.data)
+
     if form.validate_on_submit():
         hashed_password = generate_password_hash(
             form.password.data, method='sha256')
@@ -200,7 +212,7 @@ def signup():
                             password=hashed_password, account_type=form.account_type.data)
         elif (form.account_type.data == 'tutor'):
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
-                            account_type=form.account_type.data, courses=form.course.data)
+                            account_type=form.account_type.data, major=form.major.data, courses=form.course.data)
         else:  # If student, require major and year
             new_user = User(username=form.username.data, email=form.email.data, password=hashed_password,
                             account_type=form.account_type.data, major=form.major.data, year=form.year.data)
@@ -279,7 +291,7 @@ def academic_tutor():
             return redirect(url_for('student_dash_redirect', name=current_user.username))
         else:
             print('ERROR: encounter errors when redirecting user with [type:{}]'.format(current_user.account_type))
-            return redirect(url_for('404'))
+            return redirect(url_for('error_404'))
 
 
 # Go to TUTOR Dashboard
@@ -295,16 +307,29 @@ def tutor_dash_redirect():
 def student_dash_redirect():
     return render_template('student_academic_dash.html', name=current_user.username)
 
+######################################################################
+# Direct TUTOR to the questions page
+######################################################################
+@app.route('/academic/api/v1/<course>/tutor', methods=['GET', 'POST'])
+@login_required
+def tutor_course_handler(course):
+    if current_user.account_type != 'tutor':
+        return redirect(url_for('error_404'))
+
+    return render_template("tutor-main-v1.html", name=current_user.username, course=course)
+
 
 ######################################################################
 # Direct STUDENT to the Q&A page, if & only if the course is offered
 ######################################################################
 @app.route('/academic/api/v1/<course>/help', methods=['GET', 'POST'])
 @login_required
-def handle_course_selection(course):
+def student_course_handler(course):
+    if current_user.account_type != 'student':
+        return redirect(url_for('error_404'))
+
     global courses_offered
 
-    # TODO: log current action
     print('[course-{}] getting help'.format(course))
     if course not in courses_offered:
         print("course not found")
