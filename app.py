@@ -24,16 +24,20 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 courses_offered = {
-    'CSE-109': 'CSE109',
-    'CSE-216': 'CSE216',
-    'ECE-033': 'ECE033',
-    'ECE-081': 'ECE081'
+    # 'CSE-109': 'CSE109',
+    # 'CSE-216': 'CSE216',
+    # 'ECE-033': 'ECE033',
+    # 'ECE-081': 'ECE081'
+    'CSE109',
+    'CSE216',
+    'ECE033',
+    'ECE081'
 }
 major_courses = [
-    {'major': 'cse', 'course': 'CSE109'},
-    {'major': 'cse', 'course': 'CSE216'},
-    {'major': 'ece', 'course': 'ECE033'},
-    {'major': 'ece', 'course': 'ECE081'}
+    {'major': 'cse', 'course': '109'},
+    {'major': 'cse', 'course': '216'},
+    {'major': 'ece', 'course': '033'},
+    {'major': 'ece', 'course': '081'}
 ]
 account_types = [('', 'Select your account type'), ('counselor', 'Counselor'),
                  ('student', 'Student'), ('tutor', 'Tutor')]
@@ -42,6 +46,39 @@ years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore',
          ('N/A', 'N/A')]
 majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('N/A', 'N/A')]
 courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
+
+######################################################################
+'''
+    Fetch user's major and available courses
+'''
+
+
+######################################################################
+# @login_required
+@app.route('/academic/v1/user/<uid>/major-courses', methods=['GET'])
+def user_major_courses(uid):
+    major = _get_user_major(uid)
+    filter_courses = list(filter(lambda x: (x['major'] == major), major_courses))
+
+    courses = []
+    for c in filter_courses:
+        courses.append(c['course'])
+
+    print('\tmajor courses: {}'.format(courses))
+
+    return jsonify({"major": major, "courses": courses})
+
+
+def _get_user_major(uid):
+    user = User.query.filter_by(id=uid).first()
+    if user.account_type == 'student':
+        major = user.major
+    else:
+        major = None
+
+    print('User-{}: [major={}]'.format(uid, major))
+    return major
+
 
 #
 # Generate desired amount of users into Users Database
@@ -78,6 +115,7 @@ class User(UserMixin, db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[
         InputRequired(), Length(min=4, max=15)])
@@ -101,31 +139,7 @@ class RegisterForm(FlaskForm):
                         choices=majors)
     # TODO: use 'selectMutipleField' instead
     course = SelectField(u'Course(s)', validators=[InputRequired()],
-                                 choices=courses)
-
-# @login_required
-@app.route('/academic/v1/user/<uid>/major-courses', methods=['GET'])
-def user_major_courses(uid):
-    major = _get_user_major(uid)
-    filter_courses = list(filter(lambda x: (x['major'] == major), major_courses))
-
-    courses = []
-    for c in filter_courses:
-        courses.append(c['course'])
-
-    print('User-{} [major={}]\n\tmajor courses: {}'.format(uid, major, courses))
-
-    return jsonify({"major-courses": courses})
-
-def _get_user_major(uid):
-    user = User.query.filter_by(id=uid).first()
-    if user.account_type == 'student':
-        major = user.major
-    else:
-        major = None
-
-    print('User-{}: major={}'.format(uid, major))
-    return major
+                         choices=courses)
 
 
 @app.route('/')
@@ -214,13 +228,13 @@ def logout():
 
 # TODO: Hansen's part
 #  Router for when student selects emotional support upon logging in.
-@app.route('/emotional_support')
-@login_required
-def emotional_support():
-    if (current_user.account_type == 'counselor'):
-        return redirect(url_for('dashboard'))
-    else:
-        return render_template('student_counseling_dash.html', name=current_user.username)
+# @app.route('/emotional_support')
+# @login_required
+# def emotional_support():
+#     if (current_user.account_type == 'counselor'):
+#         return redirect(url_for('dashboard'))
+#     else:
+#         return render_template('student_counseling_dash.html', name=current_user.username)
 
 
 # TODO:Taohan's part
@@ -250,7 +264,7 @@ def handle_course_selection(course):
     global courses_offered
 
     # TODO: log current action
-    print("course_help: ", course)
+    print('[course-{}] getting help'.format(course))
     if course not in courses_offered:
         print("course not found")
         return redirect(url_for('error_404'))
@@ -286,9 +300,11 @@ def parse_arg_from_wit(response):
 @app.route('/academic/api/v1/answer', methods=['POST'])
 @login_required
 def get_answer_handler():
-    course = courses_offered[request.form['course']]
+    # course = courses_offered[request.form['course']]
+
+    course = ((str)(request.form['course'])).upper()
     question = request.form['question']
-    print("Question: " +  question)
+    print('Getting answer for [course:{}]\n\tQuestion: {}'.format(course, question))
     WIT = app.config['WIT_APPS']
     if course in WIT:
         token = WIT[course]['Server_Access_Token']
@@ -313,19 +329,19 @@ def get_answer_handler():
         return "Some errors occurred!"
 
 
-@app.route('/academic/api/v1/major-courses', methods=['POST'])
-@login_required
-def get_major_courses():
-    # major = request.data['major']
-    # print(major)
-    js_data = request.get_json()
-    major = (str)(js_data["major"])
-    matched_data = list(filter(lambda c: c['major'] == major, major_courses))
-    res = []
-    for d in matched_data:
-        res.append(d['course'])
-
-    return jsonify({"courses": res})
+# @app.route('/academic/api/v1/major-courses', methods=['POST'])
+# @login_required
+# def get_major_courses():
+#     # major = request.data['major']
+#     # print(major)
+#     js_data = request.get_json()
+#     major = (str)(js_data["major"])
+#     matched_data = list(filter(lambda c: c['major'] == major, major_courses))
+#     res = []
+#     for d in matched_data:
+#         res.append(d['course'])
+#
+#     return jsonify({"courses": res})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

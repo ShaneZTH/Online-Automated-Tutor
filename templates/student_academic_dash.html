@@ -55,12 +55,13 @@
                 <div class="panel-header">Choose the course you need help with</div>
                 <div class="btn-group-vertical" role="group" id="course-group"
                      aria-label="Button group with nested dropdown">
-                    <li><a href="/academic/api/v1/CSE-109/help">
-                        <button type="button" class="btn btn-default">CSE 109</button>
-                    </a></li>
-                    <li><a href="/academic/api/v1/CSE-216/help">
-                        <button type="button" class="btn btn-default">CSE 216</button>
-                    </a></li>
+<!--                    original code is outmoded-->
+<!--                    <li><a href="/academic/api/v1/CSE-109/help">-->
+<!--                        <button type="button" class="btn btn-default">CSE 109</button>-->
+<!--                    </a></li>-->
+<!--                    <li><a href="/academic/api/v1/CSE-216/help">-->
+<!--                        <button type="button" class="btn btn-default">CSE 216</button>-->
+<!--                    </a></li>-->
 
                     <!--                <div class="btn-group" role="group">-->
                     <!--                    <button id="btnGroupDrop" type="button" class="btn btn-secondary dropdown-toggle"-->
@@ -77,14 +78,33 @@
         </div>
     </div>
 
-    <script>
-        function load_course() {
+        <script src="../static/js/student_academic_dash.js"></script>
+<!--    <script type="text/javascript">-->
+<!--        window.onload = function load_course() {-->
+<!--            var settings = {-->
+<!--                "url": "/academic/v1/user/97531419829/major-courses",-->
+<!--                "method": "GET",-->
+<!--                "timeout": 0,-->
+<!--                "headers": {}-->
+<!--            };-->
 
-            var new_course = "<li><a href=\"/academic/api/v1/CSE-109/help\">" +
-                "<button type=\"button\" class=\"btn btn-default\">CSE 000</button>" +
-                "</a></li>";
-            $("#course-group").append(new_course);
-        }
-    </script>
+<!--            console.log("Major-Courses: ", settings);-->
+<!--            var courses, major;-->
+<!--            $.ajax(settings).done(function (response) {-->
+<!--                console.log("Response", response);-->
+<!--                major = response["major"].toUpperCase();-->
+<!--                courses = response["courses"];-->
+<!--                console.log("major", major)-->
+<!--                console.log("Courses", courses)-->
+<!--                for (const c in courses) {-->
+<!--                    console.log(`Adding course-${courses[c]}`);-->
+<!--                    var new_course = "<li><a href=\"/academic/api/v1/" + major + courses[c] + "/help\">" +-->
+<!--                        "<button type=\"button\" class=\"btn btn-default\">" + major + " " + courses[c] + "</button>" +-->
+<!--                        "</a></li>";-->
+<!--                    $("#course-group").append(new_course);-->
+<!--                }-->
+<!--            });-->
+<!--        }-->
+<!--    </script>-->
 </body>
 {% endblock %}
