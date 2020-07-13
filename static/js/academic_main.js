@@ -43,9 +43,9 @@ function get_unanswered_count(course) {
             "course": course
         }
     }
-    // console.log("count_unanswered() settings: ", settings);
+    console.log("count_unanswered() settings: ", settings);
     $.ajax(settings).done(function (response) {
-        // console.log("success!", response);
+        console.log("unanswered success!", response);
         unansweredCount.textContent = response;
     });
 }
@@ -88,5 +88,7 @@ function getAnswer() {
     $.ajax(settings).done(function (response) {
         // console.log("success!", response);
         AnswerBox.textContent = response;
+        get_unread_count(course);
+        get_unanswered_count(course);
     });
 }

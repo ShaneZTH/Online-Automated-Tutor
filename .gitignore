@@ -7,6 +7,7 @@ Users.sqlite
 *.sql
 */*.sqlite
 */*.sql
+*.sql-journal
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
