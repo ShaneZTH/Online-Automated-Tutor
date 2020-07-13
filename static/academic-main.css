@@ -394,3 +394,44 @@ body {
     text-overflow: ellipsis;
     line-height: 1.25;
 }
+
+/*Unread posts*/
+#unread-posts {
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 3px;
+ }
+
+#unread-posts td, #unread-posts th {
+    padding: 8px;
+    border-radius: 4px;
+    text-align: center;
+    color: #595959;
+}
+
+#unread-posts tr:nth-child(even) {
+    background-color: #e6ffff;
+}
+
+#unread-posts tr:nth-child(odd) {
+  background-color: #cccccc;
+}
+
+#unread-posts td:hover {
+  background-color: #ff0000;
+  color: white;
+}
+
+#unread-posts th {
+    padding-top: 5px;
+    padding-bottom: 12px;
+    text-align: center;
+    background-color: #00ffff;
+    border-radius: 7px;
+}
+
+#unread-posts th:hover {
+   background-color: #ff0000;
+   color: white;
+}

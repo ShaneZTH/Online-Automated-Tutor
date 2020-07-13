@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup as soup
 import requests
 import json
 from knowledge import get_answer
-from user_questions import insert_question
+from user_questions import insert_question, count_unanswered, count_unread
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -390,7 +390,7 @@ def get_answer_handler():
         if answer:
             return answer
         else:
-            insert_question(course=course, problem=question)
+            insert_question(uid=current_user.id, course=course, problem=question)
             return 'Sorry, answer is not available. Please wait for a tutor to answer.'
     else:
         # TODO: Error handling should be improve
@@ -398,6 +398,23 @@ def get_answer_handler():
         print('ERROR: [course:{}] does not exist in the system'.format(course))
         return "Some errors occurred!"
 
+@app.route('/academic/api/v1/count-unanswered', methods=['POST'])
+# @login_required
+def get_unanswered_count():
+    uid = current_user.id
+    course = ((str)(request.form['course'])).lower()
+    ret = count_unanswered(uid=uid, course=course)
+    print('Log: User-{} has {} unanswered questions for [course={}]'.format(uid, ret, course))
+    return ret
+
+@app.route('/academic/api/v1/count-unread', methods=['POST'])
+# @login_required
+def get_unread_count():
+    uid = current_user.id
+    course = ((str)(request.form['course'])).lower()
+    ret = count_unread(uid=uid, course=course)
+    print('Log: User-{} has {} unread questions for [course={}]'.format(uid, ret, course))
+    return ret
 
 # @app.route('/academic/api/v1/major-courses', methods=['POST'])
 # @login_required
