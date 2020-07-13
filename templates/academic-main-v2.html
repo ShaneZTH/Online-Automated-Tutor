@@ -289,8 +289,11 @@ Dashboard
                                     <label for="student-question">Question</label>
                                 </div>
                                 <textarea class="form-control" id="student-question"
-                                          rows="8" spellcheck="false" onkeypress="enterListener(this)"
+                                          rows="8" spellcheck="false"
                                           placeholder="Write your question here..."></textarea>
+<!--                                <textarea class="form-control" id="student-question"-->
+<!--                                          rows="8" spellcheck="false" onkeypress="enterListener(this)"-->
+<!--                                          placeholder="Write your question here..."></textarea>-->
 
                             </div>
                         </form>
@@ -315,52 +318,6 @@ Dashboard
                     </div>
 
                 </div>
-                <script>
-                    $("#student-question").keypress(function (e) {
-                        if (e.keyCode == 13) {
-                            console.log('Got keystroke ' + e);
-                            if (e.shiftKey) {
-                                e.stopPropagation();
-                            } else {
-                                e.preventDefault();
-                                getAnswer();
-                            }
-                        }
-                    });
-
-                    function getAnswer() {
-                        document.getElementById("student-answer").textContent = "";
-                        var rawText = $("#student-question").val();
-                        var userQuestion = rawText;
-                        console.log("rawText: ", rawText)
-
-                        var mCourse = '{{course}}';
-                        var settings = {
-                            "url": "/academic/api/v1/answer",
-                            "method": "POST",
-                            "timeout": 0,
-                            "data": {
-                                "course": mCourse,
-                                "question": userQuestion
-                            },
-                        };
-
-                        console.log("settings: ", settings);
-                        $.ajax(settings).done(function (response) {
-                            console.log("success!", response);
-                            // $("#student-answer").val() =response;
-                            document.getElementById("student-answer").textContent = response;
-                        });
-                    }
-
-                    $("#textInput").keypress(function (e) {
-                        console.log('the keystroke is ' + e);
-                        if (e.which == 13) {
-                            console.log('got it');
-                            getBotResponse();
-                        }
-                    });
-                </script>
                 <script src="{{ url_for('static', filename='js/academic_main.js')}}"></script>
             </div>
         </div>
