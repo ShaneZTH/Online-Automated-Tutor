@@ -86,6 +86,8 @@ body {
  */
 
 .main {
+<<<<<<< HEAD
+    float: left;
     padding: 15px;
 }
 
@@ -199,18 +201,24 @@ body {
 }
 
 .btn-c-submit {
-    background-color: #005faf; /* Blue */
-    border: none;
+<<<<<<< HEAD
+    background-color: #1B73E7; /* Blue */
+    border: grey;
     position: relative;
     margin-top: 20px;
     color: white;
-    /*padding: 15px 32px;*/
+    padding: 32px 32px;
+>>>>>>> 64b94ff4ab2e8b4107bc1b78320d3079485fa490
     text-align: center;
     /*text-decoration: none;*/
     display: inline-block;
     font-size: 14px;
     /*border-radius: 4px;*/
+<<<<<<< HEAD
     /*vertical-align: middle;*/
+=======
+    vertical-align: middle;
+>>>>>>> 64b94ff4ab2e8b4107bc1b78320d3079485fa490
 }
 
 .btn-div {

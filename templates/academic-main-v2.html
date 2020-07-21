@@ -38,14 +38,27 @@ Dashboard
 
     <div class="container-fluid">
         <div class="row">
+<<<<<<< HEAD
+            <div class="col-sm-2 col-md-2 sidebar">
+                <ul class="nav nav-sidebar">
+                    <li><a href="/dashboard">Overview </a></li>
+                    <li><a href="">Introduction of the site</a></li>
+                </ul>
+                <ul class="nav nav-sidebar">
+                    <li><b>Available Bots</b></li>
+                    <li class="active"><a href="/student/academic/dashboard">Online Tutor Bot
+                        <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li><a href="">Online Counselor Bot</a></li>
+                </ul>
+            </div>
             <!--             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">-->
-            <div class="col-sm-12 col-md-12 main">
+            <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
                 <h1 class="page-header">Welcome, {{ name }}</h1>
 
                 <div class="row placeholders">
-
                     <div class="col-sm-6 placeholder">
-                        <!--                            <div class="noticeboard">-->
+>>>>>>> 64b94ff4ab2e8b4107bc1b78320d3079485fa490
                         <div class="card">
                             <h5 class="card-header">Notice Board</h5>
                             <div class="card-body">
@@ -53,15 +66,16 @@ Dashboard
                                 <!--                                            <input type="text" placeholder="+ Add Note">-->
                                 <!--                                            <button type="submit" class="btn btn-primary">Add</button>-->
                                 <!--                                        </form>-->
+<<<<<<< HEAD
                                 <label id="noticelable">Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit
+>>>>>>> 64b94ff4ab2e8b4107bc1b78320d3079485fa490
                                 </label>
                             </div>
 
                         </div>
-                        <!--                            </div>-->
+<<<<<<< HEAD
                     </div>
-
-
+>>>>>>> 64b94ff4ab2e8b4107bc1b78320d3079485fa490
                     <div class="col col-xs-6 col-sm-6 col-md-6 placeholder">
                         <ul class="list-group">
                             <li class="list-group-item d-flex justify-content-between align-items-center text-left">
@@ -77,81 +91,91 @@ Dashboard
                 </div>
             </div>
         </div>
+<<<<<<< HEAD
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+            <h2>Automated Academic Tutor</h2>
+            <div class="box"></div>
+            <div class="row display-flex">
+                <div class="col-xs-12 col-sm-5 text-sm-center align-items-sm-center">
+                    <form>
+                        <div class="form-group expanded shadow-textarea">
+                            <div class="col-sm-5">
+                                <label for="student-question">Question</label>
+                            </div>
+                            <textarea class="form-control" id="student-question"
+                                      rows="8" spellcheck="false" onkeypress="enterListener(this)"
+                                      placeholder="Write your question here..."></textarea>
 
-        <h2>Automated Academic Tutor</h2>
-        <div class="box"></div>
-        <div class="row display-flex">
-            <div class="col-sm-5">
-                <div class="form-group black-border shadow-textarea">
-                    <label for="student-question">Question</label>
-                    <textarea class="form-control" id="student-question"
-                              rows="8" placeholder="Write your question here..."></textarea>
+                        </div>
+                    </form>
                 </div>
-            </div>
-            <div class="col-sm-2 text-center">
-                <div class="row"> <p></p> </div> <!--Lines holder-->
-                <div class="wrapper-div items-center">
-                    <button type="submit" class="btn btn-default"
-                        id="student-question-submit" onclick="getAnswer()">Submit</button>
+                <div class="col-xs-12 col-sm-2 text-center">
+                    <div class="row"><p></p></div> <!--Lines holder-->
+                    <div class="wrapper-div items-center">
+                        <button type="submit" class="btn btn-primary"
+                                id="student-question-submit" onclick="getAnswer()">Submit
+                        </button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="col-sm-5">
-                <div class="form-group green-border shadow-textarea">
-                    <label for="student-answer">Answer</label>
-                    <textarea class="form-control" id="student-answer"
-                            rows="8" ></textarea>
+                <div class="col-xs-12 col-sm-5">
+                    <div class="form-group green-border shadow-textarea">
+                        <div class="col-sm-5">
+                            <label for="student-answer">Answer</label>
+                        </div>
+                        <textarea readonly class="form-control col-form" id="student-answer"
+                                  spellcheck="false" rows="8"></textarea>
+                    </div>
                 </div>
+
             </div>
-
-        </div>
-        <script>
-            function getAnswer() {
-                var rawText = $("#student-question").val();
-                var userQuestion = rawText;
-                console.log("rawText: ", rawText)
-                // $("#textInput").val("");
-
-                var mCourse = '{{course}}';
-                var settings = {
-                    "url": "/academic/api/v1/answer",
-                    "method": "POST",
-                    "timeout": 0,
-                    "data": {
-                        "course": mCourse,
-                        "question": userQuestion
-                    },
-                };
-
-                console.log("settings: ", settings);
-                $.ajax(settings).done(function (response) {
-                    console.log("success!", response);
-
-                    // var botHtml = '<p class="botText"><span>' + response + "</span></p>";
-                    // $("#chatbox").append(botHtml);
-                    // document
-                    //     .getElementById("userInput")
-                    //     .scrollIntoView({block: "start", behavior: "smooth"});
+            <script>
+                $("#student-question").keypress(function (e) {
+                    if (e.keyCode == 13) {
+                        console.log('Got keystroke ' + e);
+                        if (e.shiftKey) {
+                            e.stopPropagation();
+                        } else {
+                            e.preventDefault();
+                            getAnswer();
+                        }
+                    }
                 });
 
+                function getAnswer() {
+                    var rawText = $("#student-question").val();
+                    var userQuestion = rawText;
+                    console.log("rawText: ", rawText)
 
-                // $.get("/get", {msg: rawText}).done(function (data) {
-                //     var botHtml = '<p class="botText"><span>' + data + "</span></p>";
-                //     $("#chatbox").append(botHtml);
-                //     document
-                //         .getElementById("userInput")
-                //         .scrollIntoView({block: "start", behavior: "smooth"});
-                // });
-            }
+                    var mCourse = '{{course}}';
+                    var settings = {
+                        "url": "/academic/api/v1/answer",
+                        "method": "POST",
+                        "timeout": 0,
+                        "data": {
+                            "course": mCourse,
+                            "question": userQuestion
+                        },
+                    };
 
-            $("#textInput").keypress(function (e) {
-                console.log('the keystroke is ' + e);
-                if (e.which == 13) {
-                    console.log('got it');
-                    getBotResponse();
+                    console.log("settings: ", settings);
+                    $.ajax(settings).done(function (response) {
+                        console.log("success!", response);
+                        // $("#student-answer").val() =response;
+                        document.getElementById("student-answer").textContent = response;
+                    });
                 }
-            });
-        </script>
+
+                $("#textInput").keypress(function (e) {
+                    console.log('the keystroke is ' + e);
+                    if (e.which == 13) {
+                        console.log('got it');
+                        getBotResponse();
+                    }
+                });
+            </script>
+        </div>
+>>>>>>> 64b94ff4ab2e8b4107bc1b78320d3079485fa490
     </div>
 </div>
 </div>
