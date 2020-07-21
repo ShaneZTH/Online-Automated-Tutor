@@ -7,7 +7,7 @@ Sign Up
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='signin.css')}}">
+<link rel="stylesheet" href="{{url_for('.static', filename='signup.css')}}">
 {% endblock %}
 
 {% block content %}
@@ -25,7 +25,7 @@ Sign Up
     {{ wtf.form_field(form.course) }}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Sign Up</button>
   </form>
-  <script src='static/signup_scripts.js'></script>
+  <script src="{{ url_for('static', filename='js/signup_scripts.js')}}"></script>
 
 </div> <!-- /container -->
 {% endblock %}
