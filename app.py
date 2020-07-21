@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup as soup
 import requests
 import json
 from knowledge import get_answer
-from user_questions import insert_question, count_unanswered, count_unread
+from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, query_count_course_unanswered, query_course_unanswered_posts
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -244,7 +244,7 @@ def dashboard():
     if (current_user.account_type == 'counselor'):
         return render_template('counselor_dashboard.html', name=current_user.username)
     else:
-        return render_template('student_dash_init.html', name=current_user.username)
+        return render_template('academic_dashboard.html', name=current_user.username)
 
 
 @app.route('/404')
@@ -272,14 +272,45 @@ def logout():
 #         return render_template('student_counseling_dash.html', name=current_user.username)
 
 
-# TODO:Taohan's part
-#  Router for when student selects academic tutor upon logging in.
+
 ######################################################################
-# Academic Dashboard Redirection
+#
+#   Tutors' Functions
+#
 ######################################################################
-@app.route('/academic_tutor')
+# Get the total number of unanswered question in the user_questions DB for the specific course
+@app.route('/academic/api/v1/tutor/course-unanswered-count', methods=['POST'])
 @login_required
-def academic_tutor():
+def get_course_unanswered_count():
+    course = ((str)(request.form['course'])).lower()
+    ret = query_count_course_unanswered(course=course)
+    print('Log: Course={} has {} unanswered questions'.format(ret, course))
+    return ret
+
+# Fetch ALL unanswered question in the user_questions DB for the specific course
+@app.route('/academic/api/v1/tutor/course-unanswered-questions', methods=['POST'])
+# @login_required
+def get_course_unanswered_posts():
+    course = ((str)(request.form['course'])).lower()
+    ret = query_course_unanswered_posts(course=course)
+    print('Log: Course-{}\'s unanswered-questions:\n{}'.format(course, ret))
+    js_data = json.dumps(ret)
+    return js_data
+
+# Direct TUTOR to the questions page
+@app.route('/academic/api/v1/<course>/tutor', methods=['GET', 'POST'])
+@login_required
+def tutor_course_handler(course):
+    if current_user.account_type != 'tutor':
+        return redirect(url_for('error_404'))
+
+    print('v1/{}/tutor: redirecting the tutor-main..'.format(course))
+    return render_template("tutor-main-v1.html", name=current_user.username, course=course)
+
+# Tutor's Academic Dashboard Redirection
+@app.route('/academic_dash')
+@login_required
+def academic_dash():
     if (current_user.account_type == 'counselor'):
         return redirect(url_for('dashboard'))
     else:
@@ -300,44 +331,34 @@ def academic_tutor():
 def tutor_dash_redirect():
     return render_template('tutor_academic_dash.html', name=current_user.username)
 
-
+######################################################################
+#
+#   Students' Functions
+#
+######################################################################
 # Go to STUDENT Dashboard
 @app.route('/student/academic/dashboard')
 @login_required
 def student_dash_redirect():
     return render_template('student_academic_dash.html', name=current_user.username)
 
-######################################################################
-# Direct TUTOR to the questions page
-######################################################################
-@app.route('/academic/api/v1/<course>/tutor', methods=['GET', 'POST'])
-@login_required
-def tutor_course_handler(course):
-    if current_user.account_type != 'tutor':
-        return redirect(url_for('error_404'))
-
-    return render_template("tutor-main-v1.html", name=current_user.username, course=course)
-
-
-######################################################################
 # Direct STUDENT to the Q&A page, if & only if the course is offered
-######################################################################
 @app.route('/academic/api/v1/<course>/help', methods=['GET', 'POST'])
 @login_required
 def student_course_handler(course):
-    if current_user.account_type != 'student':
+    if current_user.account_type == 'student':
+        global courses_offered
+
+        print('[course-{}] getting help'.format(course))
+        if course not in courses_offered:
+            print("course not found")
+            return redirect(url_for('error_404'))
+            # TODO: Error handling should be improve
+
+        return render_template("academic-main-v2.html", name=current_user.username, course=course)
+
+    else:
         return redirect(url_for('error_404'))
-
-    global courses_offered
-
-    print('[course-{}] getting help'.format(course))
-    if course not in courses_offered:
-        print("course not found")
-        return redirect(url_for('error_404'))
-        # TODO: Error handling should be improve
-
-    return render_template("academic-main-v2.html", name=current_user.username, course=course)
-
 
 # Extract values from wit response
 def parse_arg_from_wit(response):
@@ -363,9 +384,7 @@ def parse_arg_from_wit(response):
     return p_content, s_content, e_content
 
 
-######################################################################
 # Get answer for STUDENT's question
-######################################################################
 @app.route('/academic/api/v1/answer', methods=['POST'])
 @login_required
 def get_answer_handler():
@@ -415,6 +434,28 @@ def get_unread_count():
     ret = count_unread(uid=uid, course=course)
     print('Log: User-{} has {} unread questions for [course={}]'.format(uid, ret, course))
     return ret
+
+
+@app.route('/academic/api/v1/posts/unanswered', methods=['POST'])
+# @login_required
+def get_unanswered_posts():
+    uid = current_user.id
+    course = ((str)(request.form['course'])).lower()
+    ret = posts_unanswered(uid=uid, course=course)
+    print('Log: User-{}\'s unanswered-posts for [course={}]:\n{}'.format(uid, course, ret))
+    js_data = json.dumps(ret)
+    return js_data
+
+@app.route('/academic/api/v1/posts/unread', methods=['POST'])
+# @login_required
+def get_unread_posts():
+    uid = current_user.id
+    course = ((str)(request.form['course'])).lower()
+    ret = posts_unread(uid=uid, course=course)
+    print('Log: User-{}\'s unread-posts for [course={}]:\n{}'.format(uid, course, ret))
+    js_data = json.dumps(ret)
+    return js_data
+
 
 # @app.route('/academic/api/v1/major-courses', methods=['POST'])
 # @login_required

@@ -9,7 +9,7 @@ window.onload = function load_course() {
         "headers": {}
     };
 
-    console.log("Major-Courses: ", settings);
+    // console.log("Major-Courses: ", settings);
     var courses, major;
     $.ajax(settings).done(function (response) {
         console.log("Response", response);

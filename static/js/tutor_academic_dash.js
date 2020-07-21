@@ -19,7 +19,7 @@ window.onload = function load_course() {
         console.log("Courses", courses)
         for (const c in courses) {
             console.log(`Adding course-${courses[c]}`);
-            var new_course = "<li><a href=\"/academic/api/v1/" + major + courses[c] + "/help\">" +
+            var new_course = "<li><a href=\"/academic/api/v1/" + major + courses[c] + "/tutor\">" +
                 "<button type=\"button\" class=\"btn btn-default\">" + major + " " + courses[c] + "</button>" +
                 "</a></li>";
             $("#course-group").append(new_course);

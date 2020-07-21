@@ -26,26 +26,86 @@ q_str = {
     's': "subject",
     'e': "error"
 }
+def query_count_course_unanswered(course=None):
+    print('log: count_unanswered() - course={}'.format(course))
+    queryStr = ("SELECT COUNT(*) " +
+                "FROM {} ".format(TABLE_NAME) +
+                "WHERE course=\"{}\" AND has_answered=\"{}\";"
+                .format(course, 0))
+    count = None
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            count = (result.items()[0])[1]
+            print("count-course-unanswered is " + (str)(count))
+
+    return (str)(count)
+
+
+def query_course_unanswered_posts(course=None):
+    print('log: posts_unanswered() - course={}'.format(course))
+    queryStr = ("SELECT course, problem, timestamp " +
+                "FROM {} ".format(TABLE_NAME) +
+                "WHERE course=\"{}\" AND has_answered=\"{}\";"
+                .format(course, 0))
+    posts = []
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            print("post: " + (str)(result))
+            posts.append({"post":result[1], "timestamp":result[2]})
+    return posts
+
+    pass
+
+def posts_unread(uid=None, course=None):
+    print('log: posts_unread() - User-{} course={}'.format(uid, course))
+    queryStr = ("SELECT course, problem, timestamp " +
+                "FROM {} ".format(TABLE_NAME) +
+                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";"
+                .format(uid, course, 1, 0))
+    posts = []
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            print("post: " + (str)(result))
+            posts.append({"post": result[1], "timestamp": result[2]})
+    return posts
+
+def posts_unanswered(uid=None, course=None):
+    print('log: posts_unanswered() - User-{} course={}'.format(uid, course))
+    queryStr = ("SELECT course, problem, timestamp " +
+                "FROM {} ".format(TABLE_NAME) +
+                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
+                .format(uid, course, 0))
+    posts = []
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            print("post: " + (str)(result))
+            posts.append({"post":result[1], "timestamp":result[2]})
+    return posts
 
 def count_unread(uid=None, course=None):
     print('log: count_unread() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT COUNT(*) " +
                 "FROM {} ".format(TABLE_NAME) +
-                "WHERE uid=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";".format(uid, 1, 0))
+                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";"
+                .format(uid, course, 1, 0))
     count = None
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
             count = (result.items()[0])[1]
             print("unread result is " + (str)(count))
-
     return (str)(count)
 
 def count_unanswered(uid=None, course=None):
     print('log: count_unanswered() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT COUNT(*) " +
                 "FROM {} ".format(TABLE_NAME) +
-                "WHERE uid=\"{}\" AND has_answered=\"{}\";".format(uid, 0))
+                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
+                .format(uid, course, 0))
     count = None
     with engine.connect() as conn:
         results = conn.execute(queryStr)

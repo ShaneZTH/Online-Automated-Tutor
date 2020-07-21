@@ -9,13 +9,13 @@ Dashboard
 
 {% block styles %}
 {{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='academic-main.css')}}">
+<!--<link rel="stylesheet" href="{{url_for('.static', filename='academic-main.css')}}">-->
 {% endblock %}
 
 <body>
 <div class="container-fluid">
     {% block content %}
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
     <div class="container-fluid">
         <div class="row">
             <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -54,11 +54,55 @@ Dashboard
 
                             <div class="col col-xs-6 col-sm-6 col-md-6 placeholder">
                                 <ul class="list-group">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center text-left">
-                                        New students' questions
-                                        <span class="badge badge-primary badge-pill">6</span>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center text-left"
+                                        data-toggle="modal" data-target="#unansweredQuestionsModal" id="unanswered-questions-text">
+                                        New incoming questions
+                                        <span class="badge badge-primary badge-pill"
+                                              id="unanswered-questions-count"> </span>
                                     </li>
                                 </ul>
+                            </div>
+
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+                                 id="unansweredQuestionsModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Unanswered Incoming Questions</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <table class="table" id="unanswered-questions">
+                                                <thead>
+                                                </thead>
+                                                <tbody>
+<!--                                                <tr>-->
+<!--                                                    <td>#1</td>-->
+<!--                                                    <td>TEST: enean lectus. Pellentesque eget nunc.-->
+<!--                                                        Donec quis orci...-->
+<!--                                                    </td>-->
+<!--                                                </tr>-->
+<!--                                                <tr>-->
+<!--                                                    <td>#2</td>-->
+<!--                                                    <td>TEST:Morbi sem mauris, laoreet ut, rhoncus-->
+<!--                                                        aliquet, pulvinar sed, n...-->
+<!--                                                    </td>-->
+<!--                                                </tr>-->
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+                                        <!--                                        <div class="modal-footer">-->
+                                        <!--                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">-->
+                                        <!--                                                Unsatisfied-->
+                                        <!--                                            </button>-->
+                                        <!--                                            <button type="button" class="btn btn-primary">Satisfied</button>-->
+                                        <!--                                        </div>-->
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
 
@@ -78,11 +122,10 @@ Dashboard
                         <form>
                             <div class="form-group expanded shadow-textarea">
                                 <div class="col-sm-5">
-                                    <label for="student-question">Question</label>
+                                    <label for="tutor-question">Question</label>
                                 </div>
-                                <textarea class="form-control" id="student-question"
-                                          rows="8" spellcheck="false" onkeypress="enterListener(this)"
-                                          placeholder="Write your question here..."></textarea>
+                                <textarea readonly class="form-control" id="tutor-question"
+                                          rows="8" spellcheck="false" onkeypress="enterListener(this)"></textarea>
 
                             </div>
                         </form>
@@ -91,7 +134,7 @@ Dashboard
                         <div class="row"><p></p></div> <!--Lines holder-->
                         <div class="wrapper-div items-center">
                             <button type="submit" class="btn btn-primary"
-                                    id="student-question-submit" onclick="getAnswer()">Submit
+                                    id="tutor-answer-submit" onclick="submitAnswer()">Submit
                             </button>
                         </div>
                     </div>
@@ -99,59 +142,64 @@ Dashboard
                     <div class="col-xs-12 col-sm-5">
                         <div class="form-group green-border shadow-textarea">
                             <div class="col-sm-5">
-                                <label for="student-answer">Answer</label>
+                                <label for="tutor-answer">Answer</label>
                             </div>
-                            <textarea readonly class="form-control col-form" id="student-answer"
-                                      spellcheck="false" rows="8"></textarea>
+                            <textarea class="form-control col-form" id="tutor-answer"
+                                      rows="8" spellcheck="false" onkeypress="enterListener(this)"
+                                      placeholder="Write the answer here..."></textarea>
                         </div>
                     </div>
 
                 </div>
-                <script>
-                    $("#student-question").keypress(function (e) {
-                        if (e.keyCode == 13) {
-                            console.log('Got keystroke ' + e);
-                            if (e.shiftKey) {
-                                e.stopPropagation();
-                            } else {
-                                e.preventDefault();
-                                getAnswer();
-                            }
-                        }
-                    });
 
-                    function getAnswer() {
-                        var rawText = $("#student-question").val();
-                        var userQuestion = rawText;
-                        console.log("rawText: ", rawText)
+                <script src="{{ url_for('static', filename='js/tutor_main.js')}}"></script>
+                <!--                <script>-->
+                <!--                    // window.onLoad= function loadPage() {-->
+                <!--                    //     console.log("Loading page...");-->
+                <!--                    //     get_course_unanswered_count(course)-->
+                <!--                    // }-->
+                <!--                    //-->
 
-                        var mCourse = '{{course}}';
-                        var settings = {
-                            "url": "/academic/api/v1/answer",
-                            "method": "POST",
-                            "timeout": 0,
-                            "data": {
-                                "course": mCourse,
-                                "question": userQuestion
-                            },
-                        };
+                <!--                    //-->
+                <!--                    // $("#tutor-answer").keypress(function (e) {-->
+                <!--                    //     if (e.keyCode == 13) {-->
+                <!--                    //         console.log('Got keystroke ' + e);-->
+                <!--                    //         if (e.shiftKey) {-->
+                <!--                    //             e.stopPropagation();-->
+                <!--                    //         } else {-->
+                <!--                    //             e.preventDefault();-->
+                <!--                    //             submitAnswer();-->
+                <!--                    //         }-->
+                <!--                    //     }-->
+                <!--                    // });-->
 
-                        console.log("settings: ", settings);
-                        $.ajax(settings).done(function (response) {
-                            console.log("success!", response);
-                            // $("#student-answer").val() =response;
-                            document.getElementById("student-answer").textContent = response;
-                        });
-                    }
+                <!--                    function submitAnswer(){-->
+                <!--                        var tutorAnwswer = $("#tutor-answer").val();-->
+                <!--                        console.log("Submitting answer: ", tutorAnwswer);-->
+                <!--                        //-->
+                <!--                        // var mCourse = '{{course}}';-->
+                <!--                        // var settings = {-->
+                <!--                        //     "url": "/academic/api/v1/answer",-->
+                <!--                        //     "method": "POST",-->
+                <!--                        //     "timeout": 0,-->
+                <!--                        //     "data": {-->
+                <!--                        //         "course": mCourse,-->
+                <!--                        //         "question": userQuestion-->
+                <!--                        //     },-->
+                <!--                        // };-->
+                <!--                        //-->
+                <!--                        // console.log("settings: ", settings);-->
+                <!--                        // $.ajax(settings).done(function (response) {-->
+                <!--                        //     console.log("success!", response);-->
+                <!--                        //     // $("#student-answer").val() =response;-->
+                <!--                        //     document.getElementById("student-answer").textContent = response;-->
+                <!--                        // });-->
 
-                    $("#textInput").keypress(function (e) {
-                        console.log('the keystroke is ' + e);
-                        if (e.which == 13) {
-                            console.log('got it');
-                            getBotResponse();
-                        }
-                    });
-                </script>
+                <!--                        return;-->
+                <!--                    }-->
+
+                <!--                </script>-->
+
             </div>
         </div>
     </div>
