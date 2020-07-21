@@ -1,6 +1,12 @@
 # Secrets & Keys
-config.py
 config.*
+
+# Database Files
+Users.sqlite
+*.sqlite
+*.sql
+*/*.sqlite
+*/*.sql
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -9,6 +15,7 @@ __pycache__/
 # Developing files
 */README.md
 README.md
+resources/*
 docs.md
 errors.md
 
