@@ -489,7 +489,7 @@ def unread_post_feedback_handler():
         print('[{}]'.format(feedback))
         if feedback == 'satisfied':
             # TODO: implement this query statement in user-question.py
-            set_question_status(has_seen=1,id=session['qid'])
+            print(set_question_status(has_seen=1, id=session['qid']))
             data = get_question_by_id(qid=session['qid'])
             course = data[0]
             question = data[1]
@@ -503,8 +503,9 @@ def unread_post_feedback_handler():
             j_str = json.dumps(new_q)+',\n'
             print(j_str)
             _write_to_file(fname='new_knowledge.txt', type='a+', content=j_str)
-
         else:
+            set_question_status(has_answered=0,id=session['qid'])
+            print(" log: Question-{}'s answer and status has been reset".format(session['qid']))
             pass
 
         return "Feedback has been successfully handled"

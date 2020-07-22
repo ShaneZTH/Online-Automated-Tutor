@@ -29,18 +29,23 @@ q_str = {
 
 
 def set_question_status(has_answered=None, has_seen=None, id=None):
-    if not has_answered and not has_seen: # Validate at least there's one valid parameter
+    if has_answered is None and has_seen is None: # Validate at least there's one valid parameter
         return
     a_str = None
     s_str = None
     set_str = None
-    if has_answered:
-        a_str = 'has_answer = {}'.format(has_answered)
-    if has_seen:
+    if has_answered is not None and has_answered > 0:
+        a_str = 'has_answered = {}'.format(has_answered)
+    elif has_answered == 0: # resetting the question itself as student reject it
+        a_str = 'has_answered = {}, answer = Null'.format(has_answered)
+
+    if has_seen is not None and has_seen >= 0:
         s_str = 'has_seen = {}'.format(has_seen)
 
+    print(a_str, ' ', s_str, ' ', set_str)
+
     if a_str and s_str:
-        set_str = a_str + ' AND ' + s_str
+        set_str = a_str + ' , ' + s_str
     else:
         set_str = a_str if a_str else s_str
 
@@ -51,7 +56,7 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
         results = conn.execute(queryStr)
 
     print('log: Updated question_status with query-[{}]'.format(queryStr))
-    return
+    return "update success"
 
 def get_question_by_id(qid=None):
     print('log: getting info for id-{}'.format(qid))
@@ -62,7 +67,7 @@ def get_question_by_id(qid=None):
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            print(result.items())
+            # print(result.items())
             ret = result
             return ret
     return ret
