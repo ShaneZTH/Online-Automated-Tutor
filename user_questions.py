@@ -26,6 +26,48 @@ q_str = {
     's': "subject",
     'e': "error"
 }
+
+
+def set_question_status(has_answered=None, has_seen=None, id=None):
+    if not has_answered and not has_seen: # Validate at least there's one valid parameter
+        return
+    a_str = None
+    s_str = None
+    set_str = None
+    if has_answered:
+        a_str = 'has_answer = {}'.format(has_answered)
+    if has_seen:
+        s_str = 'has_seen = {}'.format(has_seen)
+
+    if a_str and s_str:
+        set_str = a_str + ' AND ' + s_str
+    else:
+        set_str = a_str if a_str else s_str
+
+    queryStr = ("UPDATE user_questions " +
+                " SET " + set_str +
+                " WHERE id = \"{}\";".format(id))
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+
+    print('log: Updated question_status with query-[{}]'.format(queryStr))
+    return
+
+def get_question_by_id(qid=None):
+    print('log: getting info for id-{}'.format(qid))
+    queryStr = ("SELECT course, problem, answer " +
+                "FROM {} ".format(TABLE_NAME) +
+                "WHERE id =\"{}\";".format(qid))
+    ret = None
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            print(result.items())
+            ret = result
+            return ret
+    return ret
+
+
 def query_count_course_unanswered(course=None):
     print('log: count_unanswered() - course={}'.format(course))
     queryStr = ("SELECT COUNT(*) " +
@@ -53,14 +95,15 @@ def query_course_unanswered_posts(course=None):
         results = conn.execute(queryStr)
         for result in results:
             print("post: " + (str)(result))
-            posts.append({"post":result[1], "timestamp":result[2]})
+            posts.append({"post": result[1], "timestamp": result[2]})
     return posts
 
     pass
 
+
 def posts_unread(uid=None, course=None):
     print('log: posts_unread() - User-{} course={}'.format(uid, course))
-    queryStr = ("SELECT course, problem, timestamp " +
+    queryStr = ("SELECT id, course, problem, timestamp " +
                 "FROM {} ".format(TABLE_NAME) +
                 "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";"
                 .format(uid, course, 1, 0))
@@ -68,13 +111,14 @@ def posts_unread(uid=None, course=None):
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            print("post: " + (str)(result))
-            posts.append({"post": result[1], "timestamp": result[2]})
+            print("posts_unread-result: " + (str)(result))
+            posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
     return posts
+
 
 def posts_unanswered(uid=None, course=None):
     print('log: posts_unanswered() - User-{} course={}'.format(uid, course))
-    queryStr = ("SELECT course, problem, timestamp " +
+    queryStr = ("SELECT id, course, problem, timestamp " +
                 "FROM {} ".format(TABLE_NAME) +
                 "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
                 .format(uid, course, 0))
@@ -82,9 +126,10 @@ def posts_unanswered(uid=None, course=None):
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            print("post: " + (str)(result))
-            posts.append({"post":result[1], "timestamp":result[2]})
+            print("posts_unanswered-result: " + (str)(result))
+            posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
     return posts
+
 
 def count_unread(uid=None, course=None):
     print('log: count_unread() - User-{} course={}'.format(uid, course))
@@ -100,6 +145,7 @@ def count_unread(uid=None, course=None):
             print("unread result is " + (str)(count))
     return (str)(count)
 
+
 def count_unanswered(uid=None, course=None):
     print('log: count_unanswered() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT COUNT(*) " +
@@ -114,6 +160,7 @@ def count_unanswered(uid=None, course=None):
             print("unanswered result is " + (str)(count))
 
     return (str)(count)
+
 
 # Insert unanswered question into database
 def insert_question(uid=None, course=None, problem=None):

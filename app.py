@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, redirect, url_for, request, jsonify
+from flask import Flask, render_template, abort, redirect, url_for, request, jsonify, session
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SelectField, SelectMultipleField
@@ -10,7 +10,8 @@ from bs4 import BeautifulSoup as soup
 import requests
 import json
 from knowledge import get_answer
-from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, query_count_course_unanswered, query_course_unanswered_posts
+from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, \
+    query_count_course_unanswered, query_course_unanswered_posts, get_question_by_id, set_question_status
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -272,7 +273,6 @@ def logout():
 #         return render_template('student_counseling_dash.html', name=current_user.username)
 
 
-
 ######################################################################
 #
 #   Tutors' Functions
@@ -287,6 +287,7 @@ def get_course_unanswered_count():
     print('Log: Course={} has {} unanswered questions'.format(ret, course))
     return ret
 
+
 # Fetch ALL unanswered question in the user_questions DB for the specific course
 @app.route('/academic/api/v1/tutor/course-unanswered-questions', methods=['POST'])
 # @login_required
@@ -297,6 +298,7 @@ def get_course_unanswered_posts():
     js_data = json.dumps(ret)
     return js_data
 
+
 # Direct TUTOR to the questions page
 @app.route('/academic/api/v1/<course>/tutor', methods=['GET', 'POST'])
 @login_required
@@ -306,6 +308,7 @@ def tutor_course_handler(course):
 
     print('v1/{}/tutor: redirecting the tutor-main..'.format(course))
     return render_template("tutor-main-v1.html", name=current_user.username, course=course)
+
 
 # Tutor's Academic Dashboard Redirection
 @app.route('/academic_dash')
@@ -331,6 +334,7 @@ def academic_dash():
 def tutor_dash_redirect():
     return render_template('tutor_academic_dash.html', name=current_user.username)
 
+
 ######################################################################
 #
 #   Students' Functions
@@ -341,6 +345,7 @@ def tutor_dash_redirect():
 @login_required
 def student_dash_redirect():
     return render_template('student_academic_dash.html', name=current_user.username)
+
 
 # Direct STUDENT to the Q&A page, if & only if the course is offered
 @app.route('/academic/api/v1/<course>/help', methods=['GET', 'POST'])
@@ -359,6 +364,7 @@ def student_course_handler(course):
 
     else:
         return redirect(url_for('error_404'))
+
 
 # Extract values from wit response
 def parse_arg_from_wit(response):
@@ -417,6 +423,7 @@ def get_answer_handler():
         print('ERROR: [course:{}] does not exist in the system'.format(course))
         return "Some errors occurred!"
 
+
 @app.route('/academic/api/v1/count-unanswered', methods=['POST'])
 # @login_required
 def get_unanswered_count():
@@ -425,6 +432,7 @@ def get_unanswered_count():
     ret = count_unanswered(uid=uid, course=course)
     print('Log: User-{} has {} unanswered questions for [course={}]'.format(uid, ret, course))
     return ret
+
 
 @app.route('/academic/api/v1/count-unread', methods=['POST'])
 # @login_required
@@ -446,6 +454,7 @@ def get_unanswered_posts():
     js_data = json.dumps(ret)
     return js_data
 
+
 @app.route('/academic/api/v1/posts/unread', methods=['POST'])
 # @login_required
 def get_unread_posts():
@@ -456,6 +465,57 @@ def get_unread_posts():
     js_data = json.dumps(ret)
     return js_data
 
+
+@app.route('/academic/api/v1/set/current-qid', methods=['POST'])
+@login_required
+def set_current_qid():
+    qid = (int)(request.form['qid'])
+    session['qid'] = qid
+    print('Log: User-{}\'s current qid is set as {}'.format(current_user.id, qid))
+    return ("Current qid is set as " + (str)(qid))
+
+
+# else:
+#     # TODO: Improve error handling
+#     abort(404, description="Resource not found")
+
+@app.route('/academic/api/v1/post/unread-feedback', methods=['POST'])
+@login_required
+def unread_post_feedback_handler():
+    if 'qid' in session:
+        feedback = request.form['feedback'].lower().strip()
+        print('Log: User-{}\'s feedback for qid-{} is {}'.format(current_user.id, session['qid'], feedback))
+
+        print('[{}]'.format(feedback))
+        if feedback == 'satisfied':
+            # TODO: implement this query statement in user-question.py
+            set_question_status(has_seen=1,id=session['qid'])
+            data = get_question_by_id(qid=session['qid'])
+            course = data[0]
+            question = data[1]
+            answer = data[2]
+
+            new_q = {
+                'course': course,
+                'question': question,
+                'answer': answer
+            }
+            j_str = json.dumps(new_q)+',\n'
+            print(j_str)
+            _write_to_file(fname='new_knowledge.txt', type='a+', content=j_str)
+
+        else:
+            pass
+
+        return "Feedback has been successfully handled"
+    else:
+        print('Resource[\'qid\'] not found')
+        # TODO: Improve error handling
+        abort(404, description="Resource['qid'] not found")
+
+def _write_to_file(fname=None, type=None, content=None):
+    with open(fname, type) as f:
+        f.write(content)
 
 # @app.route('/academic/api/v1/major-courses', methods=['POST'])
 # @login_required

@@ -11,14 +11,49 @@ var unansweredBtn = document.getElementById("unanswered-posts-text");
 
 var questionBox = document.getElementById("student-question");
 
+// var unreadModal = document.getElementById("unreadModal");
+
+
+$("#unread-posts").on("click", "tr", function (event) {
+    // > td.post-content
+    var post = $(this)
+    var qid = post.children("td:first-child").text().substring(1);
+    var qText = post.children(".post-content").text();
+    console.log("unread-posts click", qid, qText);
+
+    var settings = {
+        "url": "/academic/api/v1/set/current-qid",
+        "method": "POST",
+        "timeout": 0,
+        "data": {
+            "qid": qid
+        }
+    }
+    // console.log("count_unanswered() settings: ", settings);
+    $.ajax(settings).done(function (response) {
+        console.log(response);
+    });
+
+    $("#unreadModal").modal("hide");
+    $("#unreadPostModal").modal("show");
+
+});
+
+$("#unanswered-posts").on("click", "tr > td.post-content", function (event) {
+    alert($(this).text());
+});
+
+
 unreadBtn.onclick = function () {
     console.log("unreadBtn is clicked");
+    /* Notify backend that the Post being selected*/
     $("#unread-posts").empty();
     get_unread_posts(course);
 
 }
 
 unansweredBtn.onclick = function () {
+    event.preventDefault();
     console.log("unansweredBtn is clicked");
     $("#unanswered-posts").empty();
     get_unanswered_posts(course);
@@ -29,8 +64,8 @@ unansweredBtn.onclick = function () {
 window.onload = function load_numbers() {
     console.log("Loading numbers...");
 
-    get_unanswered_count(course);
     get_unread_count(course);
+    get_unanswered_count(course);
 }
 
 questionBox.addEventListener('keypress', (e) => {
@@ -44,6 +79,26 @@ questionBox.addEventListener('keypress', (e) => {
         }
     }
 });
+
+function unreadFeedback(feedback) {
+    console.log("unreadFeedback get: ", feedback);
+
+    var settings = {
+        "url": "/academic/api/v1/post/unread-feedback",
+        "method": "POST",
+        "timeout": 0,
+        "data": {
+            "feedback": feedback
+        }
+    }
+    $.ajax(settings).done(function (response) {
+        console.log("200-uf");
+        // recount the number after the post is processed
+        get_unread_count(course);
+        $("#unreadPostModal").modal("hide");
+    });
+
+}
 
 function get_unread_posts(course) {
     var settings = {
@@ -63,8 +118,8 @@ function get_unread_posts(course) {
             console.log("i", r_js[i]);
 
             var post = "<tr>\n" +
-                "<td>#" + (i+1) + "</td>\n" +
-                " <td>" + r_js[i]['post'] + "\n" +
+                "<td>#" + r_js[i]['qid'] + "</td>\n" +
+                " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
                 " </td>\n" +
                 "</tr>";
             console.log(post);
@@ -92,8 +147,8 @@ function get_unanswered_posts(course) {
             console.log("i", r_js[i]);
 
             var post = "<tr>\n" +
-                "<td>#" + (i+1) + "</td>\n" +
-                " <td>" + r_js[i]['post'] + "\n" +
+                "<td>#" + r_js[i]['qid'] + "</td>\n" +
+                " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
                 " </td>\n" +
                 "</tr>";
             console.log(post);

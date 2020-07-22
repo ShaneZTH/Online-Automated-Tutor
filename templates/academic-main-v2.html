@@ -225,6 +225,55 @@ Dashboard
                             </div>
 
                             <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+                                 id="unreadPostModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Unread Post</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="unread-status-block">
+                                                <div>
+                                                    <div class="status-header">
+                                                        <h5>The Question</h5>
+                                                    </div>
+                                                    <div class="status-content">
+                                                        <p>&nbsp;&nbsp;&nbsp;&nbsp;What's the difference between a
+                                                            hashset and a hashmap</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="status-header">
+                                                        <h5>Answer from tutors</h5>
+                                                    </div>
+                                                    <div class="status-content">
+                                                        <p>&nbsp;&nbsp;&nbsp;&nbsp;Test answer 1</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <button type="button" class="btn btn-satisfied"
+                                                            onclick="unreadFeedback($(this).text())">Satisfied
+                                                    </button>
+                                                    <button type="button" class="btn btn-unsatisfied"
+                                                            onclick="unreadFeedback($(this).text())">Unsatisfied
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--                                        <div class="modal-footer">-->
+                                        <!--                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">-->
+                                        <!--                                                Unsatisfied-->
+                                        <!--                                            </button>-->
+                                        <!--                                            <button type="button" class="btn btn-primary">Satisfied</button>-->
+                                        <!--                                        </div>-->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
                                  id="unreadModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
@@ -239,28 +288,21 @@ Dashboard
                                                 <thead>
                                                 </thead>
                                                 <tbody>
-<!--                                                <tr>-->
-<!--                                                    <td>#1</td>-->
-<!--                                                    <td>TEST: enean lectus. Pellentesque eget nunc.-->
-<!--                                                        Donec quis orci...-->
-<!--                                                    </td>-->
-<!--                                                </tr>-->
-<!--                                                <tr>-->
-<!--                                                    <td>#2</td>-->
-<!--                                                    <td>TEST:Morbi sem mauris, laoreet ut, rhoncus-->
-<!--                                                        aliquet, pulvinar sed, n...-->
-<!--                                                    </td>-->
-<!--                                                </tr>-->
+                                                <!--                                                <tr>-->
+                                                <!--                                                    <td>#1</td>-->
+                                                <!--                                                    <td>TEST: enean lectus. Pellentesque eget nunc.-->
+                                                <!--                                                        Donec quis orci...-->
+                                                <!--                                                    </td>-->
+                                                <!--                                                </tr>-->
+                                                <!--                                                <tr>-->
+                                                <!--                                                    <td>#2</td>-->
+                                                <!--                                                    <td>TEST:Morbi sem mauris, laoreet ut, rhoncus-->
+                                                <!--                                                        aliquet, pulvinar sed, n...-->
+                                                <!--                                                    </td>-->
+                                                <!--                                                </tr>-->
                                                 </tbody>
                                             </table>
-
                                         </div>
-                                        <!--                                        <div class="modal-footer">-->
-                                        <!--                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">-->
-                                        <!--                                                Unsatisfied-->
-                                        <!--                                            </button>-->
-                                        <!--                                            <button type="button" class="btn btn-primary">Satisfied</button>-->
-                                        <!--                                        </div>-->
                                     </div>
                                 </div>
                             </div>
@@ -318,10 +360,6 @@ Dashboard
                                 <textarea class="form-control" id="student-question"
                                           rows="8" spellcheck="false"
                                           placeholder="Write your question here..."></textarea>
-                                <!--                                <textarea class="form-control" id="student-question"-->
-                                <!--                                          rows="8" spellcheck="false" onkeypress="enterListener(this)"-->
-                                <!--                                          placeholder="Write your question here..."></textarea>-->
-
                             </div>
                         </form>
                     </div>
