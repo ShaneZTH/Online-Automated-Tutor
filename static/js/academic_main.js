@@ -13,6 +13,7 @@ var questionBox = document.getElementById("student-question");
 
 // var unreadModal = document.getElementById("unreadModal");
 
+var INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
 $("#unread-posts").on("click", "tr", function (event) {
     // > td.post-content
@@ -29,9 +30,11 @@ $("#unread-posts").on("click", "tr", function (event) {
             "qid": qid
         }
     }
-    // console.log("count_unanswered() settings: ", settings);
+    console.log("count_unanswered() settings: ", settings);
     $.ajax(settings).done(function (response) {
-        console.log(response);
+        console.log("Response", response);
+
+        refreshUnreadPostModal(course,qid);
     });
 
     $("#unreadModal").modal("hide");
@@ -69,8 +72,8 @@ window.onload = function load_numbers() {
 }
 
 questionBox.addEventListener('keypress', (e) => {
-    // console.log('Got keystroke ' + e.code);
-    if (e.code == 'Enter') {
+    console.log('Got keystroke ' + e.code);
+    if (e.code == 'Enter' || e.code == 'NumpadEnter' ) {
         if (e.shiftKey) {
             e.stopPropagation();
         } else {
@@ -79,6 +82,26 @@ questionBox.addEventListener('keypress', (e) => {
         }
     }
 });
+
+function refreshUnreadPostModal(course, pid) {
+    console.log(course, pid);
+
+     var settings = {
+        "url": "/academic/api/v1/get/question/current-qid",
+        "method": "GET",
+        "timeout": 0
+    }
+    $.ajax(settings).done(function (response) {
+        console.log("Success - refreshUnreadPostModal()", response);
+
+        var q = INDENT + response["question"];
+        var a = INDENT + response["answer"];
+
+        $(".unread-status-block").find(".question-content p").html(q);
+        $(".unread-status-block").find(".answer-content p").html(a);
+
+    });
+}
 
 function unreadFeedback(feedback) {
     console.log("unreadFeedback get: ", feedback);
@@ -115,14 +138,14 @@ function get_unread_posts(course) {
         var r_js = JSON.parse(response);
         var r_len = r_js.length;
         for (let i = 0; i < r_len; i++) {
-            console.log("i", r_js[i]);
+            // console.log("i", r_js[i]);
 
             var post = "<tr>\n" +
                 "<td>#" + r_js[i]['qid'] + "</td>\n" +
                 " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
                 " </td>\n" +
                 "</tr>";
-            console.log(post);
+            // console.log(post);
             $("#unread-posts").append(post);
         }
     });

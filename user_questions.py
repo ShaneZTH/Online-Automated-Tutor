@@ -27,6 +27,17 @@ q_str = {
     'e': "error"
 }
 
+def query_insert_tutor_answer(course=None, qid=None, answer=None):
+    queryStr = ("UPDATE user_questions " +
+                " SET has_answered =\"{}\", answer = \"{}\"".format(1, answer) +
+                " WHERE course = \"{}\" AND id = \"{}\";".format(course, qid))
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+
+
+    print('log: Insert with query-[{}]'.format(queryStr))
+    return "insert success"
+
 
 def set_question_status(has_answered=None, has_seen=None, id=None):
     if has_answered is None and has_seen is None: # Validate at least there's one valid parameter
@@ -58,7 +69,7 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
     print('log: Updated question_status with query-[{}]'.format(queryStr))
     return "update success"
 
-def get_question_by_id(qid=None):
+def query_question_by_id(qid=None):
     print('log: getting info for id-{}'.format(qid))
     queryStr = ("SELECT course, problem, answer " +
                 "FROM {} ".format(TABLE_NAME) +
@@ -91,7 +102,7 @@ def query_count_course_unanswered(course=None):
 
 def query_course_unanswered_posts(course=None):
     print('log: posts_unanswered() - course={}'.format(course))
-    queryStr = ("SELECT course, problem, timestamp " +
+    queryStr = ("SELECT id, course, problem, timestamp " +
                 "FROM {} ".format(TABLE_NAME) +
                 "WHERE course=\"{}\" AND has_answered=\"{}\";"
                 .format(course, 0))
@@ -100,7 +111,7 @@ def query_course_unanswered_posts(course=None):
         results = conn.execute(queryStr)
         for result in results:
             print("post: " + (str)(result))
-            posts.append({"post": result[1], "timestamp": result[2]})
+            posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
     return posts
 
     pass
@@ -176,11 +187,11 @@ def insert_question(uid=None, course=None, problem=None):
     qid = QID_Start + (int)(_get_random_number(4))
     course = course.lower()
 
-    queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\", \"{}\",\"{}\",\"{}\",\"{}\");" \
-        .format(TABLE_NAME, qid, uid, course, problem, current_time, 0, 0)
+    queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\", \"{}\",\"{}\",\"{}\",\"{}\",\"{}\");" \
+        .format(TABLE_NAME, qid, uid, course, problem, current_time, 0, 0, 'NULL')
     print('queryStr: {}'.format(queryStr))
 
-    # VALUES("165441325", "cse109", "What's my name?", "2020-07-12 17:38:12", "0", "1")
+    # VALUES("165441325", "cse109", "What's my name?", "2020-07-12 17:38:12", "0", "1", "NULL")
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         print("result is " + (str)(results))

@@ -489,12 +489,14 @@ body {
 }
 
 
-.unread-status-block .status-header {
+.unread-status-block .questions-header,
+.unread-status-block .answer-header {
     color: black;
     text-align: left;
 }
 
-.unread-status-block .status-content {
+.unread-status-block .question-content,
+.unread-status-block .answer-content {
     border: 1px #4e555b;
     background-color: rgba(158, 158, 158, 0.67);
     color: #fcfffa;

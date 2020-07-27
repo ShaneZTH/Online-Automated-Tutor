@@ -11,7 +11,7 @@ import requests
 import json
 from knowledge import get_answer
 from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, \
-    query_count_course_unanswered, query_course_unanswered_posts, get_question_by_id, set_question_status
+    query_count_course_unanswered, query_course_unanswered_posts, query_question_by_id, query_insert_tutor_answer, set_question_status
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -279,6 +279,17 @@ def logout():
 #
 ######################################################################
 # Get the total number of unanswered question in the user_questions DB for the specific course
+@app.route('/academic/api/v1/tutor/answer', methods=['POST'])
+@login_required
+def insert_answer():
+
+    course = ((str)(request.form['course'])).lower()
+    answer = ((str)(request.form['answer'])).lower()
+    ret = query_insert_tutor_answer(course=course,qid=session['qid'],answer=answer)
+    print('Log: Course={} has {} unanswered questions'.format(ret, course))
+    return ret
+
+# Get the total number of unanswered question in the user_questions DB for the specific course
 @app.route('/academic/api/v1/tutor/course-unanswered-count', methods=['POST'])
 @login_required
 def get_course_unanswered_count():
@@ -410,6 +421,7 @@ def get_answer_handler():
         response = requests.get(url=url, headers=headers)
 
         problems, subjects, errors = parse_arg_from_wit(response.text)
+        print('p={}, s={}, e={}'.format(problems,subjects, errors))
         answer = get_answer(course, problems, subjects, errors)
         print('Log: get_answer_handler() - knowledge retrieved: {}'.format(answer))
         if answer:
@@ -465,6 +477,29 @@ def get_unread_posts():
     js_data = json.dumps(ret)
     return js_data
 
+@app.route('/academic/api/v1/get/question/current-qid', methods=['GET','POST'])
+# @login_required
+def get_question_by_qid():
+
+    if 'qid' in session:
+        qid = session['qid']
+
+        print('Log: get_question_by_qid() User-{} getting question-{}'.format(current_user.id, qid))
+
+        data = query_question_by_id(qid=session['qid'])
+        course = data[0]
+        question = data[1]
+        answer = data[2]
+        response = {
+            "id": qid,
+            "question": question,
+            "answer": answer
+        }
+        return response
+    else:
+        return "Something Failed"
+
+
 
 @app.route('/academic/api/v1/set/current-qid', methods=['POST'])
 @login_required
@@ -490,7 +525,7 @@ def unread_post_feedback_handler():
         if feedback == 'satisfied':
             # TODO: implement this query statement in user-question.py
             print(set_question_status(has_seen=1, id=session['qid']))
-            data = get_question_by_id(qid=session['qid'])
+            data = query_question_by_id(qid=session['qid'])
             course = data[0]
             question = data[1]
             answer = data[2]
