@@ -30,7 +30,7 @@ $("#unanswered-questions").on("click", "tr", function (event) {
     });
 
     $("#unansweredQuestionsModal").modal("hide");
-    questionBox.textContent = qText;
+    questionBox.value = qText;
 
 
 });

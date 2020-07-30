@@ -63,7 +63,6 @@ unansweredBtn.onclick = function () {
 
 }
 
-
 window.onload = function load_numbers() {
     console.log("Loading numbers...");
 
@@ -132,20 +131,19 @@ function get_unread_posts(course) {
             "course": course
         }
     }
+
     // console.log("count_unanswered() settings: ", settings);
     $.ajax(settings).done(function (response) {
         console.log("unread-posts success!", response);
         var r_js = JSON.parse(response);
         var r_len = r_js.length;
         for (let i = 0; i < r_len; i++) {
-            // console.log("i", r_js[i]);
 
             var post = "<tr>\n" +
                 "<td>#" + r_js[i]['qid'] + "</td>\n" +
                 " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
                 " </td>\n" +
                 "</tr>";
-            // console.log(post);
             $("#unread-posts").append(post);
         }
     });
@@ -160,6 +158,7 @@ function get_unanswered_posts(course) {
             "course": course
         }
     }
+
     // console.log("count_unanswered() settings: ", settings);
     $.ajax(settings).done(function (response) {
         console.log("unanswered-posts success!", response);
@@ -191,7 +190,6 @@ function get_unanswered_count(course) {
     }
     // console.log("count_unanswered() settings: ", settings);
     $.ajax(settings).done(function (response) {
-        // console.log("unanswered success!", response);
         unansweredCount.textContent = response;
     });
 }
@@ -208,7 +206,6 @@ function get_unread_count(course) {
 
     // console.log("count_unread() settings: ", settings);
     $.ajax(settings).done(function (response) {
-        // console.log("success!", response);
         unreadCount.textContent = response;
     });
 }
@@ -233,7 +230,7 @@ function getAnswer() {
     // console.log("getAnswer() settings: ", settings);
     $.ajax(settings).done(function (response) {
         // console.log("success!", response);
-        AnswerBox.textContent = response;
+        AnswerBox.value = response;
         get_unread_count(course);
         get_unanswered_count(course);
     });

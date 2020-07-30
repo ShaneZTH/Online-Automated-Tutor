@@ -12,7 +12,8 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 Base = declarative_base()
 Base.query = db_session.query_property()
-TABLE_NAME = "user_questions"
+USER_QUESTIONS = "user_questions"
+TUTORS_QUESTIONS = "tutors_questions"
 
 # FIX: check db to get the exact number
 QID_Start = 100
@@ -26,14 +27,159 @@ q_str = {
     's': "subject",
     'e': "error"
 }
+tutors = {'97531419831', '97531419832', '97531419834'}
+tutors_questions_count = {
+    'cse109': {
 
-def query_insert_tutor_answer(course=None, qid=None, answer=None):
+    }, 'cse216': {
+
+    }
+}
+
+def resultproxy_handler(resultproxy=None):
+    d, a = {}, []
+    for rowproxy in resultproxy:
+        # rowproxy.items() returns an array like [(key0, value0), (key1, value1)]
+        for column, value in rowproxy.items():
+            # build up the dictionary
+            d = {**d, **{column: value}}
+        a.append(d)
+    return a
+######################################################################
+# Update the number of tutors we currently have
+#   and
+# Initialize the tutors_questions_counts
+def initialize_count():
+    for key in tutors_questions_count.keys():
+        for t in tutors:
+            tutors_questions_count[key].setdefault(t, 0)
+    print("Counts are initialized as:\n\t{}".format(tutors_questions_count))
+    return
+
+# Find the tutor with the least number of questions assigned
+def find_next_tutor(course=None):
+    curr_min = 1000
+    curr_tut = None
+    print('log: find_next_tutor() called with course-{}'.format(course))
+    print(len(tutors_questions_count[course]))
+    print(tutors_questions_count)
+    for key in tutors_questions_count[course].keys():
+        print(tutors_questions_count[course][key], str(curr_min))
+        if tutors_questions_count[course][key] < curr_min:
+            curr_tut = key
+            curr_min = tutors_questions_count[course][key]
+
+    print('\ttutor-{} has the least number of questions'.format(curr_tut))
+    return curr_tut
+
+def count_all_tutors_questions():
+    print('log: count_all_tutors_questions()')
+    queryStr = ("SELECT t_id, course, count() as count " +
+                "FROM {} ".format(TUTORS_QUESTIONS) +
+                "WHERE has_answered = \"{}\" ".format(0) +
+                "GROUP BY course, t_id")
+    initialize_count()
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            # print(result.items())
+            t_id = (result.items()[0])[1]
+            course = (result.items()[1])[1]
+            count = (result.items()[2])[1]
+            tutors_questions_count[course][str(t_id)] = count
+            print(t_id, course, count)
+    print('\t Count is done with result:\n\t\t{}'.format(tutors_questions_count))
+
+    return 'Count-All Success'
+
+
+# def count_all_tutors_questions(course=None):
+#     print('log: count_all_tutors_questions() - course={}'.format(course))
+#     queryStr = ("SELECT t_id, count()" +
+#                 "FROM {} ".format(TUTORS_QUESTIONS) +
+#                 "WHERE has_answered = \"{}\" AND course = \"{}\""
+#                 .format(0, course))
+#     with engine.connect() as conn:
+#         results = conn.execute(queryStr)
+#         for result in results:
+#             t_id, count = (result.items()[0])
+#             print(t_id, count)
+#     # TODO: find a way to store data
+#     #   NOT DONE YET, IN PROGRESS
+#
+#     pass
+
+def count_tutor_questions(t_id=None, course=None):
+    print('log: count_tutor_questions() - t_id-{} course={}'.format(t_id, course))
+    queryStr = ("SELECT COUNT(*) " +
+                "FROM {} ".format(TUTORS_QUESTIONS) +
+                "WHERE t_id=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
+                .format(t_id, course, 0, 0))
+    print('\tQuery: ' + queryStr)
+    count = None
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            count = (result.items()[0])[1]
+            print("\t query result is " + (str)(count))
+    return (str)(count)
+
+    pass
+
+def assign_tutor_question(t_id=None, course=None, q_id=None):
+    print('log: assign_tutor_question() - Tutor-{}, q_id-{}, course={}'
+          .format(t_id, q_id, course))
+
+    queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\",\"{}\");" \
+        .format(TUTORS_QUESTIONS, t_id, q_id, course, 0)
+    print('\tqueryStr: {}'.format(queryStr))
+
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        return "Assign Success"
+
+
+    return "Assign Failed"
+
+def query_tutor_questions(t_id=None, course=None):
+    print('log: query_tutor_questions() - TUTOR-{}, COURSE-{}'.format(t_id, course))
+    queryStr = (" SELECT U.id, U.course, U.problem, U.timestamp " +
+                " FROM user_questions as U  JOIN tutors_questions as T on U.id = T.q_id ".format(USER_QUESTIONS) +
+                " WHERE T.has_answered={} AND T.t_id={} AND U.course=\"{}\" ".format(0, t_id, course) +
+                " ORDER by U.timestamp;")
+    print('\tQuery: ' + queryStr)
+    posts = []
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            print("post: " + (str)(result))
+            posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
+    return posts
+    pass
+
+# Data Model for tutors_questions
+class tutors_question(Base):
+    __tablename__ = "tutors_questions"
+    t_id = Column(Integer, primary_key=True, nullable=False)
+    q_id = Column(Integer, primary_key=True, unique=True, nullable=False)
+    course = Column(String(50), default=None, nullable=False)
+
+    def __init__(self, t_id, q_id, course):
+        t_id = t_id
+        q_id = q_id
+        course = course
+
+    def __repr__(self):
+        return "<t_id-{}, q_id-{}, course-{}\n>".format(self.t_id, self.q_id, self.course)
+
+
+######################################################################
+def insert_tutor_answer(course=None, qid=None, answer=None):
     queryStr = ("UPDATE user_questions " +
                 " SET has_answered =\"{}\", answer = \"{}\"".format(1, answer) +
                 " WHERE course = \"{}\" AND id = \"{}\";".format(course, qid))
     with engine.connect() as conn:
         results = conn.execute(queryStr)
-
 
     print('log: Insert with query-[{}]'.format(queryStr))
     return "insert success"
@@ -47,6 +193,7 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
     set_str = None
     if has_answered is not None and has_answered > 0:
         a_str = 'has_answered = {}'.format(has_answered)
+        # TODO: update tutors_questions table as well
     elif has_answered == 0: # resetting the question itself as student reject it
         a_str = 'has_answered = {}, answer = Null'.format(has_answered)
 
@@ -72,22 +219,20 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
 def query_question_by_id(qid=None):
     print('log: getting info for id-{}'.format(qid))
     queryStr = ("SELECT course, problem, answer " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE id =\"{}\";".format(qid))
     ret = None
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            # print(result.items())
             ret = result
             return ret
     return ret
 
-
 def query_count_course_unanswered(course=None):
     print('log: count_unanswered() - course={}'.format(course))
     queryStr = ("SELECT COUNT(*) " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE course=\"{}\" AND has_answered=\"{}\";"
                 .format(course, 0))
     count = None
@@ -99,35 +244,31 @@ def query_count_course_unanswered(course=None):
 
     return (str)(count)
 
-
 def query_course_unanswered_posts(course=None):
     print('log: posts_unanswered() - course={}'.format(course))
     queryStr = ("SELECT id, course, problem, timestamp " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE course=\"{}\" AND has_answered=\"{}\";"
                 .format(course, 0))
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            print("post: " + (str)(result))
+            print("posts_unanswered_result: " + (str)(result))
             posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
     return posts
-
-    pass
-
 
 def posts_unread(uid=None, course=None):
     print('log: posts_unread() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT id, course, problem, timestamp " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";"
                 .format(uid, course, 1, 0))
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            print("posts_unread-result: " + (str)(result))
+            print("\tposts_unread-result: " + (str)(result))
             posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
     return posts
 
@@ -135,14 +276,14 @@ def posts_unread(uid=None, course=None):
 def posts_unanswered(uid=None, course=None):
     print('log: posts_unanswered() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT id, course, problem, timestamp " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
                 .format(uid, course, 0))
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
         for result in results:
-            print("posts_unanswered-result: " + (str)(result))
+            print("\tposts_unanswered-result: " + (str)(result))
             posts.append({"qid": result[0], "post": result[2], "timestamp": result[3]})
     return posts
 
@@ -150,7 +291,7 @@ def posts_unanswered(uid=None, course=None):
 def count_unread(uid=None, course=None):
     print('log: count_unread() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT COUNT(*) " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";"
                 .format(uid, course, 1, 0))
     count = None
@@ -163,9 +304,9 @@ def count_unread(uid=None, course=None):
 
 
 def count_unanswered(uid=None, course=None):
-    print('log: count_unanswered() - User-{} course={}'.format(uid, course))
+    print('Log: count_unanswered() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT COUNT(*) " +
-                "FROM {} ".format(TABLE_NAME) +
+                "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
                 .format(uid, course, 0))
     count = None
@@ -173,14 +314,14 @@ def count_unanswered(uid=None, course=None):
         results = conn.execute(queryStr)
         for result in results:
             count = (result.items()[0])[1]
-            print("unanswered result is " + (str)(count))
+            print("\tunanswered result is " + (str)(count))
 
     return (str)(count)
 
 
 # Insert unanswered question into database
 def insert_question(uid=None, course=None, problem=None):
-    print('log: insert_question() - User-{} course={}, problem={}'.format(uid, course, problem))
+    print('Log: insert_question() - User-{} course={}, problem={}'.format(uid, course, problem))
     current_time = datetime.now()
     # FIXME: should check db after generated, leave it as now for MVP
     # uid = _get_random_number(11)
@@ -188,22 +329,28 @@ def insert_question(uid=None, course=None, problem=None):
     course = course.lower()
 
     queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\", \"{}\",\"{}\",\"{}\",\"{}\",\"{}\");" \
-        .format(TABLE_NAME, qid, uid, course, problem, current_time, 0, 0, 'NULL')
+        .format(USER_QUESTIONS, qid, uid, course, problem, current_time, 0, 0, 'NULL')
     print('queryStr: {}'.format(queryStr))
 
     # VALUES("165441325", "cse109", "What's my name?", "2020-07-12 17:38:12", "0", "1", "NULL")
     with engine.connect() as conn:
         results = conn.execute(queryStr)
-        print("result is " + (str)(results))
+        print("\tresult is " + (str)(results))
+        conn.close()
 
-    return results
+    count_all_tutors_questions() # Refresh the count status
+    tutor = find_next_tutor(course)
+    if tutor:
+        assign_tutor_question(tutor, course, qid)
+        return results
+    else:
+        return "Insertion Failed: cannot find a tutor to answer questions"
 
 
 def _get_random_number(rLength=3):
     return ''.join((random.choice(string.digits) for i in range(rLength)))
 
-
-# Data Schema for pending questions
+# Data Schema for user_questions
 class pendingQ(Base):
     __tablename__ = "user_questions"
     id = Column(Integer, primary_key=True, unique=True)
@@ -230,6 +377,6 @@ class pendingQ(Base):
             .format(self.id, self.uid, self.course, self.timestamp,
                     self.has_answered, self.has_seen, self.problem)
 
-
 def init_db():
     Base.metadata.create_all(bind=engine)
+    count_all_tutors_questions()

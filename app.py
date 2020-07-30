@@ -11,7 +11,8 @@ import requests
 import json
 from knowledge import get_answer
 from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, \
-    query_count_course_unanswered, query_course_unanswered_posts, query_question_by_id, query_insert_tutor_answer, set_question_status
+    query_count_course_unanswered, query_course_unanswered_posts, query_question_by_id, insert_tutor_answer, set_question_status, \
+    count_tutor_questions, query_tutor_questions
 import dummy_gen as dg
 
 app = Flask(__name__)
@@ -247,18 +248,15 @@ def dashboard():
     else:
         return render_template('academic_dashboard.html', name=current_user.username)
 
-
 @app.route('/404')
 def error_404():
     return render_template('404.html')
-
 
 @app.route('/logout')
 @login_required
 def logout():
     print('User-{} logging out'.format(current_user.id))
     logout_user()
-
     return redirect(url_for('index'))
 
 
@@ -285,7 +283,7 @@ def insert_answer():
 
     course = ((str)(request.form['course'])).lower()
     answer = ((str)(request.form['answer'])).lower()
-    ret = query_insert_tutor_answer(course=course,qid=session['qid'],answer=answer)
+    ret = insert_tutor_answer(course=course,qid=session['qid'],answer=answer)
     print('Log: Course={} has {} unanswered questions'.format(ret, course))
     return ret
 
@@ -294,8 +292,8 @@ def insert_answer():
 @login_required
 def get_course_unanswered_count():
     course = ((str)(request.form['course'])).lower()
-    ret = query_count_course_unanswered(course=course)
-    print('Log: Course={} has {} unanswered questions'.format(ret, course))
+    ret = count_tutor_questions(t_id=current_user.id, course=course)
+    print('Log: TUTOR-{} has {} unanswered questions in COURSE-{}'.format(current_user.id, ret, course))
     return ret
 
 
@@ -304,11 +302,10 @@ def get_course_unanswered_count():
 # @login_required
 def get_course_unanswered_posts():
     course = ((str)(request.form['course'])).lower()
-    ret = query_course_unanswered_posts(course=course)
+    ret = query_tutor_questions(t_id=current_user.id, course=course)
     print('Log: Course-{}\'s unanswered-questions:\n{}'.format(course, ret))
     js_data = json.dumps(ret)
     return js_data
-
 
 # Direct TUTOR to the questions page
 @app.route('/academic/api/v1/<course>/tutor', methods=['GET', 'POST'])
@@ -397,7 +394,6 @@ def parse_arg_from_wit(response):
         errors = entities['error:error']
         for error in errors:
             e_content.append(error['value'])
-    # print(p_content, s_content, e_content)
     return p_content, s_content, e_content
 
 
@@ -406,7 +402,6 @@ def parse_arg_from_wit(response):
 @login_required
 def get_answer_handler():
     # course = courses_offered[request.form['course']]
-
     course = ((str)(request.form['course'])).upper()
     question = request.form['question']
     print('Getting answer for [course:{}]\n\tQuestion: {}'.format(course, question))
@@ -437,7 +432,7 @@ def get_answer_handler():
 
 
 @app.route('/academic/api/v1/count-unanswered', methods=['POST'])
-# @login_required
+@login_required
 def get_unanswered_count():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -445,9 +440,8 @@ def get_unanswered_count():
     print('Log: User-{} has {} unanswered questions for [course={}]'.format(uid, ret, course))
     return ret
 
-
 @app.route('/academic/api/v1/count-unread', methods=['POST'])
-# @login_required
+@login_required
 def get_unread_count():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -468,7 +462,7 @@ def get_unanswered_posts():
 
 
 @app.route('/academic/api/v1/posts/unread', methods=['POST'])
-# @login_required
+@login_required
 def get_unread_posts():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -478,16 +472,14 @@ def get_unread_posts():
     return js_data
 
 @app.route('/academic/api/v1/get/question/current-qid', methods=['GET','POST'])
-# @login_required
+@login_required
 def get_question_by_qid():
-
     if 'qid' in session:
         qid = session['qid']
 
         print('Log: get_question_by_qid() User-{} getting question-{}'.format(current_user.id, qid))
-
         data = query_question_by_id(qid=session['qid'])
-        course = data[0]
+        # course = data[0]
         question = data[1]
         answer = data[2]
         response = {
