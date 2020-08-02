@@ -44,9 +44,10 @@ account_types = [('', 'Select your account type'), ('counselor', 'Counselor'),
                  ('student', 'Student'), ('tutor', 'Tutor')]
 years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore', 'Sophomore'),
          ('junior', 'Junior'), ('senior', 'Senior'), ('N/A', 'N/A')]
-majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('ece', 'Electrical Engineering'),
-          ('N/A', 'N/A')]
-courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
+majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'),
+          ('ece', 'Electrical Engineering'), ('N/A', 'N/A')]
+courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'),
+           ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
 
 ######################################################################
 '''
@@ -129,20 +130,20 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
-    email = StringField('Email', validators=[InputRequired(), Email(
+    email = StringField('Email', default='', validators=[InputRequired(), Email(
         message='Invalid email'), Length(max=50)])
-    username = StringField('Username', validators=[
+    username = StringField('Username', default='', validators=[
         InputRequired(), Length(min=4, max=15)])
-    password = PasswordField('Password', validators=[
+    password = PasswordField('Password', default='', validators=[
         InputRequired(), Length(min=8, max=80)])
-    account_type = SelectField(u'I am a...', choices=account_types, validators=[
-        InputRequired()], default='')
-    year = SelectField(u'Year', validators=[InputRequired()],
-                       default='', choices=years)
-    major = SelectField(u'Major', validators=[InputRequired()],
+    account_type = SelectField(u'I am a...', default='', validators=[InputRequired()],
+                               choices=account_types)
+    year = SelectField(u'Year', default='', validators=[InputRequired()],
+                       choices=years)
+    major = SelectField(u'Major', default='', validators=[InputRequired()],
                         choices=majors)
     # TODO: use 'selectMutipleField' instead
-    course = SelectField(u'Course(s)', validators=[InputRequired()],
+    course = SelectField(u'Course', default='', validators=[InputRequired()],
                          choices=courses)
 
 
@@ -187,19 +188,20 @@ def signup():
     if (form.account_type.data == 'counselor'):
         form.major.validators = []
         form.year.validators = []
-        del form.major
-        del form.year
+        # del form.major
+        # del form.year
         print('Validators for major & year has been deactivated')
     elif (form.account_type.data == 'tutor'):
         form.year.validators = []
-        del form.year
+        # del form.year
         print('Validators for year has been deactivated')
     elif (form.account_type.data == 'student'):
         form.course.validators = []
-        del form.course
+        print(form.course.data)
+        # del form.course
         print('Validators for course has been deactivated')
+    print(form.data)
 
-    # print(form.validate())
     # print(form.email.data, form.account_type.data, form.year.data, form.major.data, form.course.data)
 
     if form.validate_on_submit():
@@ -226,6 +228,7 @@ def signup():
     else:
         print('ERROR: signup form is invalid ([username:{}]'.format(form.username.data))
         flash_errors(form)
+        # FIXME: Invalid form is not handled properly
     return render_template('signup.html', form=form)
 
 
