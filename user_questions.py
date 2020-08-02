@@ -178,14 +178,25 @@ def insert_tutor_answer(course=None, qid=None, answer=None):
     queryStr = ("UPDATE user_questions " +
                 " SET has_answered =\"{}\", answer = \"{}\"".format(1, answer) +
                 " WHERE course = \"{}\" AND id = \"{}\";".format(course, qid))
+
     with engine.connect() as conn:
         results = conn.execute(queryStr)
-
     print('log: Insert with query-[{}]'.format(queryStr))
+
+    # queryStr_tutor = ("UPDATE tutors_questions " +
+    #                   " SET has_answered=\"1\"" +
+    #                   " WHERE q_id = \"{}\";".format(id))
+    # with engine.connect as conn:
+    #     results = conn.execute(queryStr_tutor)
+
+    # print('log: Updated tutors_questions with query-[{}]'.format(queryStr_tutor))
+
     return "insert success"
 
 
+
 def set_question_status(has_answered=None, has_seen=None, id=None):
+    print('Log: set_question_status({},{},{}) is called'.format(has_answered, has_seen, id))
     if has_answered is None and has_seen is None: # Validate at least there's one valid parameter
         return
     a_str = None
@@ -194,6 +205,15 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
     if has_answered is not None and has_answered > 0:
         a_str = 'has_answered = {}'.format(has_answered)
         # TODO: update tutors_questions table as well
+        # Update tutors-questions
+        queryStr_tutor = ("UPDATE tutors_questions " +
+                    " SET has_answered=1" +
+                    " WHERE q_id = \"{}\";".format(id))
+        with engine.connect() as conn:
+            results = conn.execute(queryStr_tutor)
+            conn.close()
+        print('log: Updated tutors_questions with query-[{}]'.format(queryStr_tutor))
+
     elif has_answered == 0: # resetting the question itself as student reject it
         a_str = 'has_answered = {}, answer = Null'.format(has_answered)
 
@@ -212,6 +232,7 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
                 " WHERE id = \"{}\";".format(id))
     with engine.connect() as conn:
         results = conn.execute(queryStr)
+
 
     print('log: Updated question_status with query-[{}]'.format(queryStr))
     return "update success"

@@ -6,7 +6,6 @@ from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from bs4 import BeautifulSoup as soup
 import requests
 import json
 from knowledge import get_answer
@@ -280,10 +279,10 @@ def logout():
 @app.route('/academic/api/v1/tutor/answer', methods=['POST'])
 @login_required
 def insert_answer():
-
     course = ((str)(request.form['course'])).lower()
     answer = ((str)(request.form['answer'])).lower()
-    ret = insert_tutor_answer(course=course,qid=session['qid'],answer=answer)
+    ret = insert_tutor_answer(course=course, qid=session['qid'], answer=answer)
+    set_question_status(has_answered=1, id=session['qid'])
     print('Log: Course={} has {} unanswered questions'.format(ret, course))
     return ret
 
@@ -531,7 +530,7 @@ def unread_post_feedback_handler():
             print(j_str)
             _write_to_file(fname='new_knowledge.txt', type='a+', content=j_str)
         else:
-            set_question_status(has_answered=0,id=session['qid'])
+            set_question_status(has_answered=0, id=session['qid'])
             print(" log: Question-{}'s answer and status has been reset".format(session['qid']))
             pass
 
@@ -560,4 +559,4 @@ def _write_to_file(fname=None, type=None, content=None):
 #     return jsonify({"courses": res})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='127.0.0.1', port=6868)

@@ -1,0 +1,2 @@
+{"course": "cse109", "question": "Cannot SSH to sunlab", "answer": "just wait."},
+{"course": "cse109", "question": "How do we use hashmap for lab2?", "answer": "answer testing."},
