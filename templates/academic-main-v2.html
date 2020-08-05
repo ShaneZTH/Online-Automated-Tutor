@@ -44,25 +44,33 @@ Dashboard
         <!-- Section B~E -->
         <div class="container-fluid">
             <!-- Section B: Sidebar/Posts bar -->
-            <div class="sidebar col-sm-3 col-md-2 border-0 p-sm-0" id="posts-bar">
-                <table class="table table-condensed table-hover table-striped" data-pats="posts-bar"
+            <div class="sidebar col-sm-3 col-md-2 border-0 p-sm-0">
+                <table class="table table-condensed table-hover table-striped" data-pats="posts-siebar"
                        style="table-layout: fixed; width: 100%" id="posts-sidebar">
-                    <thead style="margin: 20px;">
-                    <thead-dark>Questions recently asked</thead-dark>
-                    <th></th>
+                    <thead>
+                    <thead-dark>
+                        <div style="margin: 10px; font-size: 14px; font-weight: 600; text-align: center">
+                            Questions recently asked
+                        </div>
+                    </thead-dark>
+                    <button type="button" class="btn btn-primary btn-sm rounded"
+                            style="float: right" data-toggle="button" data-target="#qna-section" aria-pressed="false">
+                        Ask a question
+                    </button>
                     </thead>
                     <tbody style="max-width: 248px">
-                    <tr>
-                        <td>
-                            <div>
-                                <h5 class="mb-0" data-pats="post-title">
-                                    Cannot SSH to sunlab</h5>
-                                <p class="mb-0" data-pats="post-body"> &nbsp;&nbsp;&nbsp;&nbsp;just wait.
-                                    <span class="glyphicon glyphicon-menu-right pull-right" aria-hidden="true"></span>
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
+                    <!--                            EXAMPLE tr FORMAT-->
+<!--                                        <tr>-->
+<!--                                            <td>-->
+<!--                                                <div>-->
+<!--                                                    <h5 class="answered-post-title mb-0" data-pats="post-title">-->
+<!--                                                        Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab</h5>-->
+<!--                                                    <p class="answered-post-body mb-0" data-pats="post-body"> &nbsp;&nbsp;&nbsp;&nbsp;just wait.-->
+<!--                                                        <span class="glyphicon glyphicon-menu-right pull-right" aria-hidden="true"></span>-->
+<!--                                                    </p>-->
+<!--                                                </div>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
                 </table>
             </div>
 
@@ -81,8 +89,8 @@ Dashboard
                                         <!--                                            <input type="text" placeholder="+ Add Note">-->
                                         <!--                                            <button type="submit" class="btn btn-primary">Add</button>-->
                                         <!--                                        </form>-->
-                                        <label id="noticelable">Neque porro quisquam est qui dolorem ipsum quia dolor
-                                            sit amet,
+                                        <label id="noticelable">
+                                            Waiting for further notice.
                                         </label>
                                     </div>
 
@@ -228,11 +236,25 @@ Dashboard
             </div>
         </div>
 
+        <!-- Answered Post Section -->
+        <!--        default = hide -->
+        <div class="row-fluid col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2"
+             id="answered-post-section">
+            <div class="shadow-textarea">
+                <h5>Question</h5>
+                <textarea readonly style="width: 100%; height: 100px" id="answered-post-question"></textarea>
+                <div class="line-divider"></div>
+                <h5>Answer</h5>
+                <textarea readonly style="width: 100%; height: 100px" id="answered-post-answer"></textarea>
+            </div>
+        </div>
+
+
         <!-- Actual Q&A Section -->
-        <div class="row-fluid">
+        <div class="row-fluid" id="qna-section">
             <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2"> <!--QnA box-->
                 <h2>Automated Academic Tutor</h2>
-                <div class="box"></div>
+                <div class="line-divider"></div>
                 <div class="row display-flex">
                     <div class="col-xs-12 col-sm-5 text-sm-center align-items-sm-center">
                         <form>
@@ -266,12 +288,13 @@ Dashboard
                     </div>
 
                 </div>
-                <script src="{{ url_for('static', filename='js/academic_main.js')}}"></script>
+
             </div>
         </div>
     </div>
-
+    <script src="{{ url_for('static', filename='js/academic_main.js')}}"></script>
     {% endblock %}
+
 </div>
 </body>
 </html>

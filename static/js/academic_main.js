@@ -15,6 +15,22 @@ var questionBox = document.getElementById("student-question");
 
 var INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
+$("#posts-sidebar").on("click", "tr", function (event) {
+    var post = $(this)
+    console.log("posts-sidebar click", post);
+    var title = $(this).find('.answered-post-title').text().trim();
+    var body = $(this).find('.answered-post-body').text().trim();
+
+    console.log('title', title);
+    console.log('body', body);
+
+    $("#answered-post-question").val(title);
+    $("#answered-post-answer").val(body);
+    $("#qna-section").hide();
+    $("#answered-post-section").show();
+
+});
+
 $("#unread-posts").on("click", "tr", function (event) {
     // > td.post-content
     var post = $(this)
@@ -136,27 +152,19 @@ function get_answered_posts(course) {
 
     // console.log("count_unanswered() settings: ", settings);
     $.ajax(settings).done(function (response) {
-        console.log("answered-posts success!", response);
         var r_js = JSON.parse(response);
-        console.log("answered", r_js);
+        console.log("answered-posts success!", r_js);
         var r_len = r_js.length;
         for (let i = 0; i < r_len; i++) {
-             var post = "<tr><td><div><h5 class=\"mb-0\" data-pats=\"post-title\">"+ r_js[i]["problem"] +"</h5>" +
-                "<p class=\"mb-0\" data-pats=\"post-body\">" + INDENT +  r_js[i]['answer'] +
+            var post = "<tr><td><div><h5 class=\"answered-post-title mb-0\" data-pats=\"post-title\">" + r_js[i]["problem"] + "</h5>" +
+                "<p class=\"answered-post-body mb-0\" data-pats=\"post-body\">" + INDENT + r_js[i]['answer'] +
                 "<span class=\"glyphicon glyphicon-menu-right pull-right\" aria-hidden=\"true\"></span>" +
                 "</p></div></td></tr>";
-             console.log(i, post);
-            //
-            // var post = "<tr>\n" +
-            //     "<td>#" + r_js[i]['qid'] + "</td>\n" +
-            //     " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
-            //     " </td>\n" +
-            //     "</tr>";
+            console.log(i, post);
             $("#posts-sidebar").append(post);
-            // $("#unread-posts").append(post);
         }
     });
-    return;
+
 }
 
 function get_unread_posts(course) {
