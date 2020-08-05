@@ -1,3 +1,4 @@
+pandas==1.1.0
 click==7.1.2
 dominate==2.5.1
 Flask==1.1.2

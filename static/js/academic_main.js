@@ -34,7 +34,7 @@ $("#unread-posts").on("click", "tr", function (event) {
     $.ajax(settings).done(function (response) {
         console.log("Response", response);
 
-        refreshUnreadPostModal(course,qid);
+        refreshUnreadPostModal(course, qid);
     });
 
     $("#unreadModal").modal("hide");
@@ -68,11 +68,12 @@ window.onload = function load_numbers() {
 
     get_unread_count(course);
     get_unanswered_count(course);
+    get_answered_posts(course);
 }
 
 questionBox.addEventListener('keypress', (e) => {
     console.log('Got keystroke ' + e.code);
-    if (e.code == 'Enter' || e.code == 'NumpadEnter' ) {
+    if (e.code == 'Enter' || e.code == 'NumpadEnter') {
         if (e.shiftKey) {
             e.stopPropagation();
         } else {
@@ -82,10 +83,11 @@ questionBox.addEventListener('keypress', (e) => {
     }
 });
 
+
 function refreshUnreadPostModal(course, pid) {
     console.log(course, pid);
 
-     var settings = {
+    var settings = {
         "url": "/academic/api/v1/get/question/current-qid",
         "method": "GET",
         "timeout": 0
@@ -120,6 +122,41 @@ function unreadFeedback(feedback) {
         $("#unreadPostModal").modal("hide");
     });
 
+}
+
+function get_answered_posts(course) {
+    var settings = {
+        "url": "/academic/api/v1/posts/answered",
+        "method": "POST",
+        "timeout": 0,
+        "data": {
+            "course": course
+        }
+    }
+
+    // console.log("count_unanswered() settings: ", settings);
+    $.ajax(settings).done(function (response) {
+        console.log("answered-posts success!", response);
+        var r_js = JSON.parse(response);
+        console.log("answered", r_js);
+        var r_len = r_js.length;
+        for (let i = 0; i < r_len; i++) {
+             var post = "<tr><td><div><h5 class=\"mb-0\" data-pats=\"post-title\">"+ r_js[i]["problem"] +"</h5>" +
+                "<p class=\"mb-0\" data-pats=\"post-body\">" + INDENT +  r_js[i]['answer'] +
+                "<span class=\"glyphicon glyphicon-menu-right pull-right\" aria-hidden=\"true\"></span>" +
+                "</p></div></td></tr>";
+             console.log(i, post);
+            //
+            // var post = "<tr>\n" +
+            //     "<td>#" + r_js[i]['qid'] + "</td>\n" +
+            //     " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
+            //     " </td>\n" +
+            //     "</tr>";
+            $("#posts-sidebar").append(post);
+            // $("#unread-posts").append(post);
+        }
+    });
+    return;
 }
 
 function get_unread_posts(course) {

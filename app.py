@@ -12,7 +12,10 @@ from knowledge import get_answer
 from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, \
     query_count_course_unanswered, query_course_unanswered_posts, query_question_by_id, insert_tutor_answer, set_question_status, \
     count_tutor_questions, query_tutor_questions
+import user_questions as UQ
 import dummy_gen as dg
+import datetime
+import pandas as pd
 
 app = Flask(__name__)
 app.config.from_json('config.json', silent=False)
@@ -51,7 +54,7 @@ courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'),
 
 ######################################################################
 '''
-    Fetch user's major and available courses
+    USER DB helper
 '''
 
 
@@ -160,15 +163,17 @@ def login():
 
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        print('user: ', user)
+        print('user: ', user, '|||', user.last_login)
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
 
+                session['last_login'] = user.last_login
                 if user.account_type == 'student':
                     major = user.major
                 else:
                     major = None
+
                 print('[User:{}] login as {}, [major:{}]\n'.format(user.id, user.account_type, major))
                 return redirect(url_for('dashboard', major=major))
 
@@ -231,7 +236,7 @@ def signup():
         # FIXME: Invalid form is not handled properly
     return render_template('signup.html', form=form)
 
-
+# WTForm errors handlers
 def flash_errors(form):
     """Flashes form errors"""
     for field, errors in form.errors.items():
@@ -258,6 +263,12 @@ def error_404():
 @login_required
 def logout():
     print('User-{} logging out'.format(current_user.id))
+
+    # Update user's last_login timestamp
+    user = User.query.filter_by(id=current_user.id).first()
+    user.last_login = datetime.datetime.now()
+    db.session.commit()
+
     logout_user()
     return redirect(url_for('index'))
 
@@ -425,7 +436,7 @@ def get_answer_handler():
             return answer
         else:
             insert_question(uid=current_user.id, course=course, problem=question)
-            return 'Sorry, answer is not available. Please wait for a tutor to answer.'
+            return 'Sorry, answer is not available. This question has been recorded. Please wait for a tutor to answer.'
     else:
         # TODO: Error handling should be improve
         # TODO: log current action
@@ -451,9 +462,22 @@ def get_unread_count():
     print('Log: User-{} has {} unread questions for [course={}]'.format(uid, ret, course))
     return ret
 
+@app.route('/academic/api/v1/posts/answered', methods=['POST'])
+@login_required
+def get_answered_posts():
+    course = ((str)(request.form['course'])).lower()
+    time_min = datetime.datetime.now() - datetime.timedelta(weeks=2)
+    time = session['last_login'] if 'last_login' in session and pd.to_datetime(session['last_login']) < time_min else time_min
+    print('time: ', time)
+
+    ret = UQ.query_course_answered_posts(course=course, time=time)
+    print('Log: Answered-posts for [COURSE-{}]:\n{}\n\n'.format(course, ret))
+    js_data = json.dumps(ret)
+    return js_data
+    pass
 
 @app.route('/academic/api/v1/posts/unanswered', methods=['POST'])
-# @login_required
+@login_required
 def get_unanswered_posts():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()

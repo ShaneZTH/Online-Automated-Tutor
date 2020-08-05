@@ -71,9 +71,24 @@ body {
     white-space: nowrap;
 }
 
-[data-pats="posts-bar"] td {
-    font-size: 11pt;
+[data-pats="posts-bar"] tr div {
+    /*max-width:238px;*/
+    width: 100%;
+    max-height: 40px;
 }
+
+[data-pats="posts-bar"] td [data-pats="post-title"]{
+    font-size: 11pt;
+    width:100%;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    overflow-x: hidden;
+}
+
+[data-pats="posts-bar"] td [data-pats="post-body"]{
+    font-size: 9pt;
+}
+
 
 /* Sidebar navigation */
 .nav-sidebar {

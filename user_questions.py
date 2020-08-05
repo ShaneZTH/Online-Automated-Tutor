@@ -250,6 +250,22 @@ def query_question_by_id(qid=None):
             return ret
     return ret
 
+def query_course_answered_posts(course=None, time=None):
+    print('log: course_answered_posts(course-{})'.format(course))
+    queryStr = ("SELECT id, course, problem, answer, timestamp " +
+                "FROM {} ".format(USER_QUESTIONS) +
+                "WHERE course=\"{}\" AND has_answered=\"{}\" ".format(course, 1) +
+                "AND has_seen=\"{}\" AND timestamp >=\"{}\";".format(1, time))
+    posts = []
+    with engine.connect() as conn:
+        results = conn.execute(queryStr)
+        for result in results:
+            print("\tcourse_posts_answered_result: " + str(result))
+            posts.append({"qid": result[0], "problem": result[2],
+                          "answer": result[3], "timestamp": result[4]})
+    return posts
+
+
 def query_count_course_unanswered(course=None):
     print('log: count_unanswered() - course={}'.format(course))
     queryStr = ("SELECT COUNT(*) " +
