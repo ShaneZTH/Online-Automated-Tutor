@@ -54,23 +54,24 @@ Dashboard
                         </div>
                     </thead-dark>
                     <button type="button" class="btn btn-primary btn-sm rounded"
-                            style="float: right" data-toggle="button" data-target="#qna-section" aria-pressed="false">
+                            style="float: right" data-toggle="button" data-target="#qna-section"
+                            aria-pressed="false" id="btn-ask-a-question">
                         Ask a question
                     </button>
                     </thead>
                     <tbody style="max-width: 248px">
                     <!--                            EXAMPLE tr FORMAT-->
-<!--                                        <tr>-->
-<!--                                            <td>-->
-<!--                                                <div>-->
-<!--                                                    <h5 class="answered-post-title mb-0" data-pats="post-title">-->
-<!--                                                        Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab</h5>-->
-<!--                                                    <p class="answered-post-body mb-0" data-pats="post-body"> &nbsp;&nbsp;&nbsp;&nbsp;just wait.-->
-<!--                                                        <span class="glyphicon glyphicon-menu-right pull-right" aria-hidden="true"></span>-->
-<!--                                                    </p>-->
-<!--                                                </div>-->
-<!--                                            </td>-->
-<!--                                        </tr>-->
+                    <!--                                        <tr>-->
+                    <!--                                            <td>-->
+                    <!--                                                <div>-->
+                    <!--                                                    <h5 class="answered-post-title mb-0" data-pats="post-title">-->
+                    <!--                                                        Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab</h5>-->
+                    <!--                                                    <p class="answered-post-body mb-0" data-pats="post-body"> &nbsp;&nbsp;&nbsp;&nbsp;just wait.-->
+                    <!--                                                        <span class="glyphicon glyphicon-menu-right pull-right" aria-hidden="true"></span>-->
+                    <!--                                                    </p>-->
+                    <!--                                                </div>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
                 </table>
             </div>
 
@@ -128,7 +129,7 @@ Dashboard
                                         <div class="modal-body">
                                             <div class="unread-status-block">
                                                 <div>
-                                                    <div class="question-header">
+                                                    <div class="question-header header">
                                                         <h5>The Question</h5>
                                                     </div>
                                                     <div class="question-content">
@@ -137,7 +138,7 @@ Dashboard
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <div class="answer-header">
+                                                    <div class="answer-header header">
                                                         <h5>Answer from tutors</h5>
                                                     </div>
                                                     <div class="answer-content">
@@ -252,9 +253,10 @@ Dashboard
 
         <!-- Actual Q&A Section -->
         <div class="row-fluid" id="qna-section">
-            <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2"> <!--QnA box-->
+            <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
                 <h2>Automated Academic Tutor</h2>
                 <div class="line-divider"></div>
+                <!--QnA box-->
                 <div class="row display-flex">
                     <div class="col-xs-12 col-sm-5 text-sm-center align-items-sm-center">
                         <form>
@@ -262,8 +264,8 @@ Dashboard
                                 <div class="col-sm-5">
                                     <label for="student-question">Question</label>
                                 </div>
-                                <textarea class="form-control" id="student-question"
-                                          rows="8" spellcheck="false"
+                                    <textarea class="form-control" id="student-question"
+                                          rows="14" spellcheck="false" width="100%"
                                           placeholder="Write your question here..."></textarea>
                             </div>
                         </form>
@@ -283,7 +285,7 @@ Dashboard
                                 <label for="student-answer">Answer</label>
                             </div>
                             <textarea readonly class="form-control col-form" id="student-answer"
-                                      spellcheck="false" rows="8"></textarea>
+                                      spellcheck="false" rows="14"></textarea>
                         </div>
                     </div>
 

@@ -27,7 +27,7 @@ q_str = {
     's': "subject",
     'e': "error"
 }
-tutors = {'97531419831', '97531419832', '97531419834'}
+tutors = {'97531419837', '97531419838'}
 tutors_questions_count = {
     'cse109': {
 
@@ -175,6 +175,9 @@ class tutors_question(Base):
 
 ######################################################################
 def insert_tutor_answer(course=None, qid=None, answer=None):
+    # print("a", answer)
+    # answer = answer.replace('"', '\\"')
+    # print("a", answer)
     queryStr = ("UPDATE user_questions " +
                 " SET has_answered =\"{}\", answer = \"{}\"".format(1, answer) +
                 " WHERE course = \"{}\" AND id = \"{}\";".format(course, qid))
@@ -383,6 +386,8 @@ def insert_question(uid=None, course=None, problem=None):
     else:
         return "Insertion Failed: cannot find a tutor to answer questions"
 
+def _querystr_handler(str):
+    return str.replace('"', '\"')
 
 def _get_random_number(rLength=3):
     return ''.join((random.choice(string.digits) for i in range(rLength)))

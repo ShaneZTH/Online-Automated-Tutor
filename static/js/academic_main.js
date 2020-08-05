@@ -9,11 +9,17 @@ var unreadBtn = document.getElementById("unread-posts-text");
 var unansweredCount = document.getElementById("unanswered-posts-count");
 var unansweredBtn = document.getElementById("unanswered-posts-text");
 
+
 var questionBox = document.getElementById("student-question");
 
 // var unreadModal = document.getElementById("unreadModal");
 
 var INDENT = "&nbsp;&nbsp;&nbsp;&nbsp;";
+
+$("#btn-ask-a-question").click(function(event){
+    $("#answered-post-section").hide();
+    $("#qna-section").show();
+});
 
 $("#posts-sidebar").on("click", "tr", function (event) {
     var post = $(this)
@@ -135,6 +141,7 @@ function unreadFeedback(feedback) {
         console.log("200-uf");
         // recount the number after the post is processed
         get_unread_count(course);
+        get_answered_posts(course);
         $("#unreadPostModal").modal("hide");
     });
 

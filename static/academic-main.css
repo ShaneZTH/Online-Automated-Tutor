@@ -78,10 +78,10 @@ body {
 }
 
 #posts-sidebar .answered-post-title {
-    font-size: 14pt;
-    width:100%;
-    white-space:nowrap;
-    text-overflow:ellipsis;
+    font-size: 11pt;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     overflow-x: hidden;
 }
 
@@ -93,7 +93,7 @@ body {
 /*    overflow-x: hidden;*/
 /*}*/
 
-[data-pats="posts-bar"] td [data-pats="post-body"]{
+[data-pats="posts-bar"] td [data-pats="post-body"] {
     font-size: 9pt;
 }
 
@@ -424,7 +424,7 @@ body {
     border-collapse: collapse;
     width: 100%;
     border-radius: 3px;
- }
+}
 
 #unread-posts td, #unread-posts th {
     padding: 8px;
@@ -443,12 +443,12 @@ body {
 }
 
 #unread-posts tr:nth-child(odd) {
-  background-color: #cccccc;
+    background-color: #cccccc;
 }
 
 #unread-posts td:hover {
-  background-color: #c1001a;
-  color: white;
+    background-color: #c1001a;
+    color: white;
 }
 
 #unread-posts th {
@@ -460,8 +460,8 @@ body {
 }
 
 #unread-posts th:hover {
-   background-color: #ff0000;
-   color: white;
+    background-color: #ff0000;
+    color: white;
 }
 
 /* Unanswered Posts */
@@ -470,7 +470,7 @@ body {
     border-collapse: collapse;
     width: 100%;
     border-radius: 3px;
- }
+}
 
 
 #unanswered-posts td, #unanswered-posts th {
@@ -490,12 +490,12 @@ body {
 }
 
 #unanswered-posts tr:nth-child(odd) {
-  background-color: #cccccc;
+    background-color: #cccccc;
 }
 
 #unanswered-posts td:hover {
-  background-color: #c1001a;
-  color: white;
+    background-color: #c1001a;
+    color: white;
 }
 
 #unanswered-posts th {
@@ -507,8 +507,8 @@ body {
 }
 
 #unanswered-posts th:hover {
-   background-color: #ff0000;
-   color: white;
+    background-color: #ff0000;
+    color: white;
 }
 
 
@@ -543,4 +543,16 @@ body {
 
 #answered-post-section textarea {
     background: #eeeeee;
+}
+
+textarea {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+
+/*unreadPostModal*/
+#unreadPostModal .header {
+    text-align: left;
 }
