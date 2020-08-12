@@ -65,8 +65,9 @@ function submitAnswer() {
     console.log("submitAnswer() settings: ", settings);
     $.ajax(settings).done(function (response) {
         console.log(response);
+        alert("Answer successfully submit");
         questionBox.value = "";
-        answerBox.value = "Answer successfully submit";
+        answerBox.value = "";
         get_course_unanswered_count(course);
     });
 }
