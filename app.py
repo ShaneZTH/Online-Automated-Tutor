@@ -52,6 +52,8 @@ majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'),
 courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'),
            ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
 
+BOT_ID = 99
+
 ######################################################################
 '''
     USER DB helper
@@ -253,11 +255,12 @@ def dashboard():
     if (current_user.account_type == 'counselor'):
         return render_template('counselor_dashboard.html', name=current_user.username)
     else:
-        return render_template('academic_dashboard.html', name=current_user.username)
+        return render_template('student/academic_dashboard.html', name=current_user.username)
 
 @app.route('/404')
 def error_404():
-    return render_template('404.html')
+    return render_template('errors/404.html')
+
 
 @app.route('/logout')
 @login_required
@@ -328,7 +331,7 @@ def tutor_course_handler(course):
         return redirect(url_for('error_404'))
 
     print('v1/{}/tutor: redirecting the tutor-main..'.format(course))
-    return render_template("tutor-main-v1.html", name=current_user.username, course=course)
+    return render_template("tutor/tutor-main-v1.html", name=current_user.username, course=course)
 
 
 # Tutor's Academic Dashboard Redirection
@@ -353,7 +356,7 @@ def academic_dash():
 @app.route('/tutor/academic/dashboard')
 @login_required
 def tutor_dash_redirect():
-    return render_template('tutor_academic_dash.html', name=current_user.username)
+    return render_template('tutor/tutor_academic_dash.html', name=current_user.username)
 
 
 ######################################################################
@@ -365,7 +368,7 @@ def tutor_dash_redirect():
 @app.route('/student/academic/dashboard')
 @login_required
 def student_dash_redirect():
-    return render_template('student_academic_dash.html', name=current_user.username)
+    return render_template('student/student_academic_dash.html', name=current_user.username)
 
 
 # Direct STUDENT to the Q&A page, if & only if the course is offered
@@ -381,8 +384,7 @@ def student_course_handler(course):
             return redirect(url_for('error_404'))
             # TODO: Error handling should be improve
 
-        return render_template("academic-main-v2.html", name=current_user.username, course=course)
-
+        return render_template("student/academic-main-v2.html", name=current_user.username, course=course)
     else:
         return redirect(url_for('error_404'))
 
@@ -433,15 +435,39 @@ def get_answer_handler():
         answer = get_answer(course, problems, subjects, errors)
         print('Log: get_answer_handler() - knowledge retrieved: {}'.format(answer))
         if answer:
-            return answer
+            session['course'] = course
+            session['problem'] = question
+            session['answer'] = answer
+            return answer, 208
         else:
             insert_question(uid=current_user.id, course=course, problem=question)
-            return 'Sorry, answer is not available. This question has been recorded. Please wait for a tutor to answer.'
+            return 'Sorry, answer is not available. This question has been recorded. ' + \
+                   'Please wait for a tutor to answer.', 201
     else:
         # TODO: Error handling should be improve
         # TODO: log current action
         print('ERROR: [course:{}] does not exist in the system'.format(course))
         return "Some errors occurred!"
+
+@app.route('/academic/api/v1/bot-answer-feedback', methods=['POST'])
+@login_required
+def submit_bot_answer_feedback():
+    feedback = str(request.form['feedback']).lower()
+    print('Log: submit_bot_answer_feedback() - feedback = {}'.format(feedback))
+    if feedback == 'satisfied':
+        # TODO: insert question to user_question with a bot tutor id
+        insert_question(uid=BOT_ID,
+                        course=session['course'], problem=session['problem'], answer=session['answer'])
+        print('\t- question inserted as bot response')
+        return "Success", 200
+
+        pass
+    else:
+        insert_question(uid=current_user.id,
+                        course=session['course'], problem=session['problem'])
+        print('\t- question inserted as new question')
+        return "Question saved", 201
+        pass
 
 
 @app.route('/academic/api/v1/count-unanswered', methods=['POST'])
@@ -570,20 +596,6 @@ def unread_post_feedback_handler():
 def _write_to_file(fname=None, type=None, content=None):
     with open(fname, type) as f:
         f.write(content)
-
-# @app.route('/academic/api/v1/major-courses', methods=['POST'])
-# @login_required
-# def get_major_courses():
-#     # major = request.data['major']
-#     # print(major)
-#     js_data = request.get_json()
-#     major = (str)(js_data["major"])
-#     matched_data = list(filter(lambda c: c['major'] == major, major_courses))
-#     res = []
-#     for d in matched_data:
-#         res.append(d['course'])
-#
-#     return jsonify({"courses": res})
 
 if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=6868)

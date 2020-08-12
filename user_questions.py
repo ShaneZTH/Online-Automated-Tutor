@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, Integer, String, Text, TIMESTAMP, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Text, TIMESTAMP, Boolean, func
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -16,7 +16,8 @@ USER_QUESTIONS = "user_questions"
 TUTORS_QUESTIONS = "tutors_questions"
 
 # FIX: check db to get the exact number
-QID_Start = 100
+QID_Start = 10001
+BOT_ID = 99
 
 courses_offered = {
     'CSE-109': 'CSE109',
@@ -253,12 +254,14 @@ def query_question_by_id(qid=None):
             return ret
     return ret
 
+# Prepare content for sidebar posts
 def query_course_answered_posts(course=None, time=None):
     print('log: course_answered_posts(course-{})'.format(course))
     queryStr = ("SELECT id, course, problem, answer, timestamp " +
                 "FROM {} ".format(USER_QUESTIONS) +
                 "WHERE course=\"{}\" AND has_answered=\"{}\" ".format(course, 1) +
-                "AND has_seen=\"{}\" AND timestamp >=\"{}\";".format(1, time))
+                "AND has_seen=\"{}\" AND timestamp >=\"{}\" ".format(1, time) +
+                "ORDER BY timestamp DESC;")
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
@@ -302,8 +305,9 @@ def posts_unread(uid=None, course=None):
     print('log: posts_unread() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT id, course, problem, timestamp " +
                 "FROM {} ".format(USER_QUESTIONS) +
-                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" AND has_seen=\"{}\";"
-                .format(uid, course, 1, 0))
+                "WHERE uid=\"{}\" AND course=\"{}\" AND " +
+                "has_answered=\"{}\" AND has_seen=\"{}\" ".format(uid, course, 1, 0) +
+                "ORDER BY id DESC;")
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
@@ -317,8 +321,8 @@ def posts_unanswered(uid=None, course=None):
     print('log: posts_unanswered() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT id, course, problem, timestamp " +
                 "FROM {} ".format(USER_QUESTIONS) +
-                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\";"
-                .format(uid, course, 0))
+                "WHERE uid=\"{}\" AND course=\"{}\" AND has_answered=\"{}\" ".format(uid, course, 0) +
+                "ORDER BY id  DESC;")
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
@@ -360,16 +364,24 @@ def count_unanswered(uid=None, course=None):
 
 
 # Insert unanswered question into database
-def insert_question(uid=None, course=None, problem=None):
-    print('Log: insert_question() - User-{} course={}, problem={}'.format(uid, course, problem))
+def insert_question(uid=None, course=None, problem=None, answer=None):
+    global QID_Start
+    print('Log: insert_question({}, {}, {}, {})'.format(uid, course, problem, answer))
     current_time = datetime.now()
     # FIXME: should check db after generated, leave it as now for MVP
     # uid = _get_random_number(11)
-    qid = QID_Start + (int)(_get_random_number(4))
+    qid_count = db_session.query(pendingQ).count()
+    print(f"\t qid_count = {qid_count}")
+
+    qid = QID_Start + int(qid_count)
     course = course.lower()
 
-    queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\", \"{}\",\"{}\",\"{}\",\"{}\",\"{}\");" \
-        .format(USER_QUESTIONS, qid, uid, course, problem, current_time, 0, 0, 'NULL')
+    if uid is BOT_ID:
+        queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\", \"{}\",\"{}\",\"{}\",\"{}\",\"{}\");" \
+        .format(USER_QUESTIONS, qid, uid, course, problem, current_time, 1, 1, answer)
+    else:
+        queryStr = "INSERT into {} VALUES (\"{}\", \"{}\", \"{}\", \"{}\",\"{}\",\"{}\",\"{}\",\"{}\");" \
+            .format(USER_QUESTIONS, qid, uid, course, problem, current_time, 0, 0, 'NULL')
     print('queryStr: {}'.format(queryStr))
 
     # VALUES("165441325", "cse109", "What's my name?", "2020-07-12 17:38:12", "0", "1", "NULL")
@@ -378,13 +390,16 @@ def insert_question(uid=None, course=None, problem=None):
         print("\tresult is " + (str)(results))
         conn.close()
 
-    count_all_tutors_questions() # Refresh the count status
-    tutor = find_next_tutor(course)
-    if tutor:
-        assign_tutor_question(tutor, course, qid)
-        return results
+    if not answer:
+        count_all_tutors_questions() # Refresh the count status
+        tutor = find_next_tutor(course)
+        if tutor:
+            assign_tutor_question(tutor, course, qid)
+            return results
+        else:
+            return "Insertion Failed: cannot find a tutor to answer questions"
     else:
-        return "Insertion Failed: cannot find a tutor to answer questions"
+        return "success"
 
 def _querystr_handler(str):
     return str.replace('"', '\"')

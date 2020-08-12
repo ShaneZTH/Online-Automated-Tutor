@@ -82,20 +82,21 @@ Dashboard
                         <h1 class="page-header">Welcome, {{ name }}</h1>
 
                         <div class="row placeholders">
+                            <!--  Noticeboard-->
                             <div class="col-sm-6 placeholder">
-                                <div class="card" id="noticeboard">
-                                    <h5 class="card-header">Notice Board</h5>
-                                    <div class="card-body">
-                                        <!--                                        <form id="noticeBoardBtn">-->
-                                        <!--                                            <input type="text" placeholder="+ Add Note">-->
-                                        <!--                                            <button type="submit" class="btn btn-primary">Add</button>-->
-                                        <!--                                        </form>-->
-                                        <label id="noticelable">
-                                            Waiting for further notice.
-                                        </label>
-                                    </div>
+                                <!--                                <div class="card" id="noticeboard">-->
+                                <!--                                    <h5 class="card-header">Notice Board</h5>-->
+                                <!--                                    <div class="card-body">-->
+                                <!--                                        &lt;!&ndash;                                        <form id="noticeBoardBtn">&ndash;&gt;-->
+                                <!--                                        &lt;!&ndash;                                            <input type="text" placeholder="+ Add Note">&ndash;&gt;-->
+                                <!--                                        &lt;!&ndash;                                            <button type="submit" class="btn btn-primary">Add</button>&ndash;&gt;-->
+                                <!--                                        &lt;!&ndash;                                        </form>&ndash;&gt;-->
+                                <!--                                        <label id="noticelable">-->
+                                <!--                                            Waiting for further notice.-->
+                                <!--                                        </label>-->
+                                <!--                                    </div>-->
 
-                                </div>
+                                <!--                                </div>-->
                             </div>
 
                             <div class="col col-xs-6 col-sm-6 col-md-6 placeholder">
@@ -147,10 +148,10 @@ Dashboard
                                                 </div>
                                                 <div>
                                                     <button type="button" class="btn btn-satisfied"
-                                                            onclick="unreadFeedback($(this).text())">Satisfied
+                                                            onclick="tutorAnswerFeedback($(this).text())">Satisfied
                                                     </button>
                                                     <button type="button" class="btn btn-unsatisfied"
-                                                            onclick="unreadFeedback($(this).text())">Unsatisfied
+                                                            onclick="tutorAnswerFeedback($(this).text())">Unsatisfied
                                                     </button>
                                                 </div>
                                             </div>
@@ -264,19 +265,29 @@ Dashboard
                                 <div class="col-sm-5">
                                     <label for="student-question">Question</label>
                                 </div>
-                                    <textarea class="form-control" id="student-question"
+                                <textarea class="form-control" id="student-question"
                                           rows="14" spellcheck="false" width="100%"
                                           placeholder="Write your question here..."></textarea>
                             </div>
                         </form>
                     </div>
-                    <div class="col-xs-12 col-sm-2 text-center">
-                        <div class="row"><p></p></div> <!--Lines holder-->
-                        <div class="wrapper-div items-center">
-                            <button type="submit" class="btn btn-primary"
-                                    id="student-question-submit" onclick="getAnswer()">Submit
-                            </button>
-                        </div>
+                    <div class="col-xs-12 col-sm-2" style="align-items: center;justify-content: center;">
+                        <!--                        <div class="row"><p></p></div> &lt;!&ndash;Lines holder&ndash;&gt;-->
+                        <row>
+                            <div class="wrapper-div" id="qna-default-center">
+                                <button type="submit" class="btn btn-primary"
+                                        id="student-question-submit" onclick="getAnswer()">Submit
+                                </button>
+                            </div>
+                            <div class="wrapper-div" id="bot-answer-feedback">
+                                <button type="button" class="btn-feedback btn btn-success" style=""
+                                        id="bot-answer-feedback-satisfied">Satisfied
+                                </button>
+                                <button type="button" class="btn btn-feedback btn-danger" style="margin-top: 10px"
+                                        id="bot-answer-feedback-unsatisfied">Unsatisfied
+                                </button>
+                            </div>
+                        </row>
                     </div>
 
                     <div class="col-xs-12 col-sm-5">

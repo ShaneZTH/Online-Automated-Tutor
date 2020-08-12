@@ -85,6 +85,15 @@ body {
     overflow-x: hidden;
 }
 
+#posts-sidebar .answered-post-body {
+    font-size: 9pt;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+}
 /*[data-pats="posts-bar"] td [data-pats="post-title"]{*/
 /*    font-size: 11pt;*/
 /*    width:100%;*/
@@ -93,9 +102,9 @@ body {
 /*    overflow-x: hidden;*/
 /*}*/
 
-[data-pats="posts-bar"] td [data-pats="post-body"] {
-    font-size: 9pt;
-}
+/*[data-pats="posts-bar"] td [data-pats="post-body"] {*/
+/*    font-size: 9pt;*/
+/*}*/
 
 
 /* Sidebar navigation */
@@ -244,9 +253,16 @@ body {
 .wrapper-div {
     justify-content: center;
     vertical-align: middle;
-    height: 120px;
+    display: table-cell;
+    height: 320px;
     margin: auto;
     align-items: center;
+    /*align-content: center;*/
+}
+
+.wrapper-div .btn {
+    display: block;
+    margin:0 auto;
 }
 
 .btn-c-submit {
@@ -262,10 +278,6 @@ body {
     font-size: 14px;
     /*border-radius: 4px;*/
     vertical-align: middle;
-}
-
-.btn-div {
-    padding-bottom: 10px;
 }
 
 /*
@@ -555,4 +567,8 @@ textarea {
 /*unreadPostModal*/
 #unreadPostModal .header {
     text-align: left;
+}
+
+#bot-answer-feedback {
+    display: none;
 }

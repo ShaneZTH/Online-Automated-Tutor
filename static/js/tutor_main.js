@@ -87,7 +87,7 @@ function get_course_unanswered_questions(course) {
         var r_js = JSON.parse(response);
         var r_len = r_js.length;
         for (let i = 0; i < r_len; i++) {
-            console.log("i", r_js[i]);
+            // console.log("i", r_js[i]);
 
             var post = "<tr>\n" +
                 "<td>#" + r_js[i]['qid'] + "</td>\n" +
