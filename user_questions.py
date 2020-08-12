@@ -305,9 +305,10 @@ def posts_unread(uid=None, course=None):
     print('log: posts_unread() - User-{} course={}'.format(uid, course))
     queryStr = ("SELECT id, course, problem, timestamp " +
                 "FROM {} ".format(USER_QUESTIONS) +
-                "WHERE uid=\"{}\" AND course=\"{}\" AND " +
-                "has_answered=\"{}\" AND has_seen=\"{}\" ".format(uid, course, 1, 0) +
+                "WHERE uid=\"{}\" AND course=\"{}\" AND ".format(uid, course) +
+                "has_answered=\"{}\" AND has_seen=\"{}\" ".format(1, 0) +
                 "ORDER BY id DESC;")
+    print("\t", queryStr)
     posts = []
     with engine.connect() as conn:
         results = conn.execute(queryStr)
