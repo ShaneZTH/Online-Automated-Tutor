@@ -431,7 +431,7 @@ def get_answer_handler():
         response = requests.get(url=url, headers=headers)
 
         problems, subjects, errors = parse_arg_from_wit(response.text)
-        print('p={}, s={}, e={}'.format(problems,subjects, errors))
+        print('\tp={}, s={}, e={}'.format(problems,subjects, errors))
         answer = get_answer(course, problems, subjects, errors)
         print('Log: get_answer_handler() - knowledge retrieved: {}'.format(answer))
         if answer:
@@ -472,7 +472,7 @@ def submit_bot_answer_feedback():
             'answer': session['answer']
         }
         j_str = json.dumps(new_q) + ',\n'
-        print(j_str)
+        # print(j_str)
 
         _write_to_file(fname='docs/unsatisfied_answers.txt', type='a+', content=j_str)
 
@@ -505,7 +505,7 @@ def get_answered_posts():
     course = ((str)(request.form['course'])).lower()
     time_min = datetime.datetime.now() - datetime.timedelta(weeks=2)
     time = session['last_login'] if 'last_login' in session and pd.to_datetime(session['last_login']) < time_min else time_min
-    print('time: ', time)
+    # print('time: ', time)
 
     ret = UQ.query_course_answered_posts(course=course, time=time)
     print('Log: Answered-posts for [COURSE-{}]:\n{}\n\n'.format(course, ret))
@@ -591,7 +591,7 @@ def unread_post_feedback_handler():
                 'answer': answer
             }
             j_str = json.dumps(new_q)+',\n'
-            print(j_str)
+            # print(j_str)
             _write_to_file(fname='docs/new_knowledge.txt', type='a+', content=j_str)
         else:
             set_question_status(has_answered=0, id=session['qid'])
