@@ -159,6 +159,8 @@ function submitBotFeedback(feedback) {
     console.log("submitBotFeedback settings: ", settings);
     $.ajax(settings).done(function () {
         console.log("submitBotFeedback() Success", feedback)
+        questionBox.value = "";
+        answerBox.value = "";
         // console.log(questionBox.value, answerBox.value);
         // answerBox.value = "";
         // questionBox.value = "";

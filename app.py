@@ -465,6 +465,17 @@ def submit_bot_answer_feedback():
     else:
         insert_question(uid=current_user.id,
                         course=session['course'], problem=session['problem'])
+
+        new_q = {
+            'course': session['course'],
+            'question': session['problem'],
+            'answer': session['answer']
+        }
+        j_str = json.dumps(new_q) + ',\n'
+        print(j_str)
+
+        _write_to_file(fname='docs/unsatisfied_answers.txt', type='a+', content=j_str)
+
         print('\t- question inserted as new question')
         return "Question saved", 201
         pass
@@ -581,7 +592,7 @@ def unread_post_feedback_handler():
             }
             j_str = json.dumps(new_q)+',\n'
             print(j_str)
-            _write_to_file(fname='new_knowledge.txt', type='a+', content=j_str)
+            _write_to_file(fname='docs/new_knowledge.txt', type='a+', content=j_str)
         else:
             set_question_status(has_answered=0, id=session['qid'])
             print(" log: Question-{}'s answer and status has been reset".format(session['qid']))
