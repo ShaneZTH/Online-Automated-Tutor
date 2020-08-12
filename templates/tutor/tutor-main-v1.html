@@ -9,13 +9,13 @@ Dashboard
 
 {% block styles %}
 {{super()}}
-<!--<link rel="stylesheet" href="{{url_for('.static', filename='academic-main.css')}}">-->
+<link rel="stylesheet" href="{{url_for('.static', filename='academic-main.css')}}">
 {% endblock %}
 
 <body>
 <div class="container-fluid">
     {% block content %}
-<!--    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <div class="container-fluid">
         <div class="row">
             <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -125,14 +125,14 @@ Dashboard
                                     <label for="tutor-question">Question</label>
                                 </div>
                                 <textarea readonly class="form-control" id="tutor-question"
-                                          rows="8" spellcheck="false" onkeypress="enterListener(this)"></textarea>
+                                          rows="8" spellcheck="false"></textarea>
 
                             </div>
                         </form>
                     </div>
-                    <div class="col-xs-12 col-sm-2 text-center">
+                    <div class="col-xs-12 col-sm-2 text-center" style="align-items: center;justify-content: center;">
                         <div class="row"><p></p></div> <!--Lines holder-->
-                        <div class="wrapper-div items-center">
+                        <div class="wrapper-div">
                             <button type="submit" class="btn btn-primary"
                                     id="tutor-answer-submit" onclick="submitAnswer()">Submit
                             </button>
@@ -144,7 +144,7 @@ Dashboard
                             <div class="col-sm-5">
                                 <label for="tutor-answer">Answer</label>
                             </div>
-                            <textarea class="form-control col-form" id="tutor-answer"
+                            <textarea class="form-control" id="tutor-answer"
                                       rows="8" spellcheck="false" onkeypress="enterListener(this)"
                                       placeholder="Write the answer here..."></textarea>
                         </div>

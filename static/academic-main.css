@@ -71,9 +71,41 @@ body {
     white-space: nowrap;
 }
 
-[data-pats="posts-bar"] td {
-    font-size: 11pt;
+[data-pats="posts-bar"] tr div {
+    /*max-width:238px;*/
+    width: 100%;
+    max-height: 40px;
 }
+
+#posts-sidebar .answered-post-title {
+    font-size: 11pt;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+}
+
+#posts-sidebar .answered-post-body {
+    font-size: 9pt;
+    width: 100%;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+}
+/*[data-pats="posts-bar"] td [data-pats="post-title"]{*/
+/*    font-size: 11pt;*/
+/*    width:100%;*/
+/*    white-space:nowrap;*/
+/*    text-overflow:ellipsis;*/
+/*    overflow-x: hidden;*/
+/*}*/
+
+/*[data-pats="posts-bar"] td [data-pats="post-body"] {*/
+/*    font-size: 9pt;*/
+/*}*/
+
 
 /* Sidebar navigation */
 .nav-sidebar {
@@ -221,9 +253,16 @@ body {
 .wrapper-div {
     justify-content: center;
     vertical-align: middle;
-    height: 120px;
+    display: table-cell;
+    height: 320px;
     margin: auto;
     align-items: center;
+    /*align-content: center;*/
+}
+
+.wrapper-div .btn {
+    display: block;
+    margin:0 auto;
 }
 
 .btn-c-submit {
@@ -240,10 +279,6 @@ body {
     /*border-radius: 4px;*/
     /*vertical-align: middle;*/
     vertical-align: middle;
-}
-
-.btn-div {
-    padding-bottom: 10px;
 }
 
 /*
@@ -314,7 +349,7 @@ body {
     border: 1px solid green;
 }
 
-.box {
+.line-divider {
     border: 2px solid black;
 }
 
@@ -402,7 +437,7 @@ body {
     border-collapse: collapse;
     width: 100%;
     border-radius: 3px;
- }
+}
 
 #unread-posts td, #unread-posts th {
     padding: 8px;
@@ -411,17 +446,22 @@ body {
     color: #595959;
 }
 
+#unread-posts td:first-child {
+    width: 90px;
+}
+
+
 #unread-posts tr:nth-child(even) {
     background-color: #e6ffff;
 }
 
 #unread-posts tr:nth-child(odd) {
-  background-color: #cccccc;
+    background-color: #cccccc;
 }
 
 #unread-posts td:hover {
-  background-color: #c1001a;
-  color: white;
+    background-color: #c1001a;
+    color: white;
 }
 
 #unread-posts th {
@@ -433,8 +473,8 @@ body {
 }
 
 #unread-posts th:hover {
-   background-color: #ff0000;
-   color: white;
+    background-color: #ff0000;
+    color: white;
 }
 
 /* Unanswered Posts */
@@ -443,7 +483,8 @@ body {
     border-collapse: collapse;
     width: 100%;
     border-radius: 3px;
- }
+}
+
 
 #unanswered-posts td, #unanswered-posts th {
     padding: 8px;
@@ -452,17 +493,22 @@ body {
     color: #595959;
 }
 
+#unanswered-posts td:first-child {
+    width: 90px;
+}
+
+
 #unanswered-posts tr:nth-child(even) {
     background-color: #e6ffff;
 }
 
 #unanswered-posts tr:nth-child(odd) {
-  background-color: #cccccc;
+    background-color: #cccccc;
 }
 
 #unanswered-posts td:hover {
-  background-color: #c1001a;
-  color: white;
+    background-color: #c1001a;
+    color: white;
 }
 
 #unanswered-posts th {
@@ -474,6 +520,56 @@ body {
 }
 
 #unanswered-posts th:hover {
-   background-color: #ff0000;
-   color: white;
+    background-color: #ff0000;
+    color: white;
+}
+
+
+.unread-status-block .questions-header,
+.unread-status-block .answer-header {
+    color: black;
+    text-align: left;
+}
+
+.unread-status-block .question-content,
+.unread-status-block .answer-content {
+    border: 1px #4e555b;
+    background-color: rgba(158, 158, 158, 0.67);
+    color: #fcfffa;
+    text-align: left;
+    padding-top: 2px;
+    border-radius: 2px;
+}
+
+.unread-status-block .btn-satisfied {
+    color: royalblue;
+}
+
+.unread-status-block .btn-unsatisfied {
+    color: darkred;
+}
+
+/*answered-post section*/
+#answered-post-section {
+    display: none;
+}
+
+#answered-post-section textarea {
+    background: #eeeeee;
+}
+
+textarea {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+
+/*unreadPostModal*/
+#unreadPostModal .header {
+    text-align: left;
+}
+
+#bot-answer-feedback {
+    display: none;
 }

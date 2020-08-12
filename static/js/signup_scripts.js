@@ -19,13 +19,15 @@ acct_select.onchange = function () {
         $('#year').attr('disabled', 'disabled');
         $('#course').val('N/A')
         $('#course').attr('disabled', 'disabled')
+
     } else if ($('#account_type').val() == 'tutor') {
         // $('#major').val('N/A');
         // $('#major').prop('required', false);
         // $('#major').attr('disabled', 'disabled');
         $('#major').removeAttr('disabled');
-
-        $('#year').val('N/A');
+        console.log('year', $('#year').val());
+        $('#year').val('N/A').change();
+        console.log('year', $('#year').val());
         // $('#year').prop('required', false);
         $('#year').attr('disabled', 'disabled');
 
@@ -36,8 +38,8 @@ acct_select.onchange = function () {
         $('#year').val('');
         $('#year').removeAttr('disabled');
         // $('#year').prop('required', false);
-        $('#course').val('N/A');
-        $('#course').attr('disabled', 'disabled');
+        $('#course').val('N/A').change();
         // $('#course').prop('required', false);
+        $('#course').attr('disabled', 'disabled');
     }
 }

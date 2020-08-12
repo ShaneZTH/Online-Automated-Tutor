@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+{% extends "bootstrap/base.html" %}
+<html lang="en">
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='academic-main.css')}}">
+{% endblock %}
+
+<body>
+<div class="container-fluid">
+    {% block content %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="navbar navbar-inverse navbar-fixed-top">
+                <div class="container-fluid">
+                    <div class="nav navbar-header">
+                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                                data-target="#navbar"
+                                aria-expanded="false" aria-controls="navbar">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="/">Online Automated Tutor</a>
+                    </div>
+                    <div id="navbar" class="navbar-collapse collapse">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a href="/dashboard">Dashboard</a></li>
+                            <li><a href="#">Settings</a></li>
+                            <li><a href="#">Profile</a></li>
+                            <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <!-- Section B~E -->
+        <div class="container-fluid">
+            <!-- Section B: Sidebar/Posts bar -->
+            <div class="sidebar col-sm-3 col-md-2 border-0 p-sm-0">
+                <table class="table table-condensed table-hover table-striped" data-pats="posts-siebar"
+                       style="table-layout: fixed; width: 100%" id="posts-sidebar">
+                    <thead>
+                    <thead-dark>
+                        <div style="margin: 10px; font-size: 14px; font-weight: 600; text-align: center">
+                            Questions recently asked
+                        </div>
+                    </thead-dark>
+                    <button type="button" class="btn btn-primary btn-sm rounded"
+                            style="float: right" data-toggle="button" data-target="#qna-section"
+                            aria-pressed="false" id="btn-ask-a-question">
+                        Ask a question
+                    </button>
+                    </thead>
+                    <tbody style="max-width: 248px">
+                    <!--                            EXAMPLE tr FORMAT-->
+                    <!--                                        <tr>-->
+                    <!--                                            <td>-->
+                    <!--                                                <div>-->
+                    <!--                                                    <h5 class="answered-post-title mb-0" data-pats="post-title">-->
+                    <!--                                                        Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab Cannot SSH to sunlab</h5>-->
+                    <!--                                                    <p class="answered-post-body mb-0" data-pats="post-body"> &nbsp;&nbsp;&nbsp;&nbsp;just wait.-->
+                    <!--                                                        <span class="glyphicon glyphicon-menu-right pull-right" aria-hidden="true"></span>-->
+                    <!--                                                    </p>-->
+                    <!--                                                </div>-->
+                    <!--                                            </td>-->
+                    <!--                                        </tr>-->
+                </table>
+            </div>
+
+            <!-- Noticeboard and Posts update -->
+            <div class="row">
+                <div class="container-fluid" id="content-main">
+                    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+                        <h1 class="page-header">Welcome, {{ name }}</h1>
+
+                        <div class="row placeholders">
+                            <!--  Noticeboard-->
+                            <div class="col-sm-6 placeholder">
+                                <!--                                <div class="card" id="noticeboard">-->
+                                <!--                                    <h5 class="card-header">Notice Board</h5>-->
+                                <!--                                    <div class="card-body">-->
+                                <!--                                        &lt;!&ndash;                                        <form id="noticeBoardBtn">&ndash;&gt;-->
+                                <!--                                        &lt;!&ndash;                                            <input type="text" placeholder="+ Add Note">&ndash;&gt;-->
+                                <!--                                        &lt;!&ndash;                                            <button type="submit" class="btn btn-primary">Add</button>&ndash;&gt;-->
+                                <!--                                        &lt;!&ndash;                                        </form>&ndash;&gt;-->
+                                <!--                                        <label id="noticelable">-->
+                                <!--                                            Waiting for further notice.-->
+                                <!--                                        </label>-->
+                                <!--                                    </div>-->
+
+                                <!--                                </div>-->
+                            </div>
+
+                            <div class="col col-xs-6 col-sm-6 col-md-6 placeholder">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center text-left"
+                                        data-toggle="modal" data-target="#unreadModal" data-whatever="@mdo"
+                                        id="unread-posts-text">
+                                        Unread answers
+                                        <span class="badge badge-primary badge-pill" id="unread-posts-count">0</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center text-left"
+                                        data-toggle="modal" data-target="#unansweredModal" data-whatever="@mdo"
+                                        id="unanswered-posts-text">
+                                        Unanswered questions
+                                        <span class="badge badge-primary badge-pill"
+                                              id="unanswered-posts-count">0</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+                                 id="unreadPostModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Unread Post</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="unread-status-block">
+                                                <div>
+                                                    <div class="question-header header">
+                                                        <h5>The Question</h5>
+                                                    </div>
+                                                    <div class="question-content">
+                                                        <p>&nbsp;&nbsp;&nbsp;&nbsp;What's the difference between a
+                                                            hashset and a hashmap</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="answer-header header">
+                                                        <h5>Answer from tutors</h5>
+                                                    </div>
+                                                    <div class="answer-content">
+                                                        <p>&nbsp;&nbsp;&nbsp;&nbsp;Test answer 1</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <button type="button" class="btn btn-satisfied"
+                                                            onclick="tutorAnswerFeedback($(this).text())">Satisfied
+                                                    </button>
+                                                    <button type="button" class="btn btn-unsatisfied"
+                                                            onclick="tutorAnswerFeedback($(this).text())">Unsatisfied
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--                                        <div class="modal-footer">-->
+                                        <!--                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">-->
+                                        <!--                                                Unsatisfied-->
+                                        <!--                                            </button>-->
+                                        <!--                                            <button type="button" class="btn btn-primary">Satisfied</button>-->
+                                        <!--                                        </div>-->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+                                 id="unreadModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Unread Answers</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <table class="table" id="unread-posts">
+                                                <thead>
+                                                </thead>
+                                                <tbody>
+                                                <!--                                                <tr>-->
+                                                <!--                                                    <td>#1</td>-->
+                                                <!--                                                    <td>TEST: enean lectus. Pellentesque eget nunc.-->
+                                                <!--                                                        Donec quis orci...-->
+                                                <!--                                                    </td>-->
+                                                <!--                                                </tr>-->
+                                                <!--                                                <tr>-->
+                                                <!--                                                    <td>#2</td>-->
+                                                <!--                                                    <td>TEST:Morbi sem mauris, laoreet ut, rhoncus-->
+                                                <!--                                                        aliquet, pulvinar sed, n...-->
+                                                <!--                                                    </td>-->
+                                                <!--                                                </tr>-->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog"
+                                 id="unansweredModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Unanswered Questions</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <table class="table" id="unanswered-posts">
+                                                <thead>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+                                        <!--                                        <div class="modal-footer">-->
+                                        <!--                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">-->
+                                        <!--                                                Unsatisfied-->
+                                        <!--                                            </button>-->
+                                        <!--                                            <button type="button" class="btn btn-primary">Satisfied</button>-->
+                                        <!--                                        </div>-->
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Answered Post Section -->
+        <!--        default = hide -->
+        <div class="row-fluid col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2"
+             id="answered-post-section">
+            <div class="shadow-textarea">
+                <h5>Question</h5>
+                <textarea readonly style="width: 100%; height: 100px" id="answered-post-question"></textarea>
+                <div class="line-divider"></div>
+                <h5>Answer</h5>
+                <textarea readonly style="width: 100%; height: 100px" id="answered-post-answer"></textarea>
+            </div>
+        </div>
+
+
+        <!-- Actual Q&A Section -->
+        <div class="row-fluid" id="qna-section">
+            <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2">
+                <h2>Automated Academic Tutor</h2>
+                <div class="line-divider"></div>
+                <!--QnA box-->
+                <div class="row display-flex">
+                    <div class="col-xs-12 col-sm-5 text-sm-center align-items-sm-center">
+                        <form>
+                            <div class="form-group expanded shadow-textarea">
+                                <div class="col-sm-5">
+                                    <label for="student-question">Question</label>
+                                </div>
+                                <textarea class="form-control" id="student-question"
+                                          rows="14" spellcheck="false" width="100%"
+                                          placeholder="Write your question here..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-xs-12 col-sm-2" style="align-items: center;justify-content: center;">
+                        <!--                        <div class="row"><p></p></div> &lt;!&ndash;Lines holder&ndash;&gt;-->
+                        <row>
+                            <div class="wrapper-div" id="qna-default-center">
+                                <button type="submit" class="btn btn-primary"
+                                        id="student-question-submit" onclick="getAnswer()">Submit
+                                </button>
+                            </div>
+                            <div class="wrapper-div" id="bot-answer-feedback">
+                                <button type="button" class="btn-feedback btn btn-success" style=""
+                                        id="bot-answer-feedback-satisfied">Satisfied
+                                </button>
+                                <button type="button" class="btn btn-feedback btn-danger" style="margin-top: 10px"
+                                        id="bot-answer-feedback-unsatisfied">Unsatisfied
+                                </button>
+                            </div>
+                        </row>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-5">
+                        <div class="form-group green-border shadow-textarea">
+                            <div class="col-sm-5">
+                                <label for="student-answer">Answer</label>
+                            </div>
+                            <textarea readonly class="form-control col-form" id="student-answer"
+                                      spellcheck="false" rows="14"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/academic_main.js')}}"></script>
+    {% endblock %}
+
+</div>
+</body>
+</html>

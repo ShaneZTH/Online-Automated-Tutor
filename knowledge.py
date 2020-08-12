@@ -161,6 +161,3 @@ def get_answer(course=None, problems=None, subjects=None, errors=None):
 def init_db():
     Base.metadata.create_all(bind=engine)
 
-
-# print("ANSWER: ", get_answer('cse109', ['work'], ['fork()'], ''))
-# __prepare_query( ['include', 'edit'],'','')

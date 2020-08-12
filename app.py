@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, redirect, url_for, request, jsonify
+from flask import Flask, render_template, abort, redirect, url_for, request, jsonify, session
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SelectField, SelectMultipleField
@@ -6,12 +6,16 @@ from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-from bs4 import BeautifulSoup as soup
 import requests
 import json
 from knowledge import get_answer
-from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, query_count_course_unanswered, query_course_unanswered_posts
+from user_questions import insert_question, count_unanswered, count_unread, posts_unanswered, posts_unread, \
+    query_count_course_unanswered, query_course_unanswered_posts, query_question_by_id, insert_tutor_answer, set_question_status, \
+    count_tutor_questions, query_tutor_questions
+import user_questions as UQ
 import dummy_gen as dg
+import datetime
+import pandas as pd
 
 app = Flask(__name__)
 app.config.from_json('config.json', silent=False)
@@ -43,13 +47,16 @@ account_types = [('', 'Select your account type'), ('counselor', 'Counselor'),
                  ('student', 'Student'), ('tutor', 'Tutor')]
 years = [('', 'Select your year'), ('freshman', 'Freshman'), ('sophomore', 'Sophomore'),
          ('junior', 'Junior'), ('senior', 'Senior'), ('N/A', 'N/A')]
-majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'), ('ece', 'Electrical Engineering'),
-          ('N/A', 'N/A')]
-courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'), ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
+majors = [('', 'Select your major'), ('cse', 'Computer Science Engineering'),
+          ('ece', 'Electrical Engineering'), ('N/A', 'N/A')]
+courses = [('', 'Select your course(s)'), ('CSE109', 'CSE-109'),
+           ('CSE216', 'CSE-216'), ('N/A', 'N/A')]
+
+BOT_ID = 99
 
 ######################################################################
 '''
-    Fetch user's major and available courses
+    USER DB helper
 '''
 
 
@@ -128,20 +135,20 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
-    email = StringField('Email', validators=[InputRequired(), Email(
+    email = StringField('Email', default='', validators=[InputRequired(), Email(
         message='Invalid email'), Length(max=50)])
-    username = StringField('Username', validators=[
+    username = StringField('Username', default='', validators=[
         InputRequired(), Length(min=4, max=15)])
-    password = PasswordField('Password', validators=[
+    password = PasswordField('Password', default='', validators=[
         InputRequired(), Length(min=8, max=80)])
-    account_type = SelectField(u'I am a...', choices=account_types, validators=[
-        InputRequired()], default='')
-    year = SelectField(u'Year', validators=[InputRequired()],
-                       default='', choices=years)
-    major = SelectField(u'Major', validators=[InputRequired()],
+    account_type = SelectField(u'I am a...', default='', validators=[InputRequired()],
+                               choices=account_types)
+    year = SelectField(u'Year', default='', validators=[InputRequired()],
+                       choices=years)
+    major = SelectField(u'Major', default='', validators=[InputRequired()],
                         choices=majors)
     # TODO: use 'selectMutipleField' instead
-    course = SelectField(u'Course(s)', validators=[InputRequired()],
+    course = SelectField(u'Course', default='', validators=[InputRequired()],
                          choices=courses)
 
 
@@ -158,15 +165,17 @@ def login():
 
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        print('user: ', user)
+        print('user: ', user, '|||', user.last_login)
         if user:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
 
+                session['last_login'] = user.last_login
                 if user.account_type == 'student':
                     major = user.major
                 else:
                     major = None
+
                 print('[User:{}] login as {}, [major:{}]\n'.format(user.id, user.account_type, major))
                 return redirect(url_for('dashboard', major=major))
 
@@ -186,19 +195,20 @@ def signup():
     if (form.account_type.data == 'counselor'):
         form.major.validators = []
         form.year.validators = []
-        del form.major
-        del form.year
+        # del form.major
+        # del form.year
         print('Validators for major & year has been deactivated')
     elif (form.account_type.data == 'tutor'):
         form.year.validators = []
-        del form.year
+        # del form.year
         print('Validators for year has been deactivated')
     elif (form.account_type.data == 'student'):
         form.course.validators = []
-        del form.course
+        print(form.course.data)
+        # del form.course
         print('Validators for course has been deactivated')
+    print(form.data)
 
-    # print(form.validate())
     # print(form.email.data, form.account_type.data, form.year.data, form.major.data, form.course.data)
 
     if form.validate_on_submit():
@@ -225,9 +235,10 @@ def signup():
     else:
         print('ERROR: signup form is invalid ([username:{}]'.format(form.username.data))
         flash_errors(form)
+        # FIXME: Invalid form is not handled properly
     return render_template('signup.html', form=form)
 
-
+# WTForm errors handlers
 def flash_errors(form):
     """Flashes form errors"""
     for field, errors in form.errors.items():
@@ -244,20 +255,24 @@ def dashboard():
     if (current_user.account_type == 'counselor'):
         return render_template('counselor_dashboard.html', name=current_user.username)
     else:
-        return render_template('academic_dashboard.html', name=current_user.username)
-
+        return render_template('student/academic_dashboard.html', name=current_user.username)
 
 @app.route('/404')
 def error_404():
-    return render_template('404.html')
+    return render_template('errors/404.html')
 
 
 @app.route('/logout')
 @login_required
 def logout():
     print('User-{} logging out'.format(current_user.id))
-    logout_user()
 
+    # Update user's last_login timestamp
+    user = User.query.filter_by(id=current_user.id).first()
+    user.last_login = datetime.datetime.now()
+    db.session.commit()
+
+    logout_user()
     return redirect(url_for('index'))
 
 
@@ -272,27 +287,38 @@ def logout():
 #         return render_template('student_counseling_dash.html', name=current_user.username)
 
 
-
 ######################################################################
 #
 #   Tutors' Functions
 #
 ######################################################################
 # Get the total number of unanswered question in the user_questions DB for the specific course
+@app.route('/academic/api/v1/tutor/answer', methods=['POST'])
+@login_required
+def insert_answer():
+    course = ((str)(request.form['course'])).lower()
+    answer = ((str)(request.form['answer'])).lower()
+    ret = insert_tutor_answer(course=course, qid=session['qid'], answer=answer)
+    set_question_status(has_answered=1, id=session['qid'])
+    print('Log: Course={} has {} unanswered questions'.format(ret, course))
+    return ret
+
+# Get the total number of unanswered question in the user_questions DB for the specific course
 @app.route('/academic/api/v1/tutor/course-unanswered-count', methods=['POST'])
 @login_required
 def get_course_unanswered_count():
     course = ((str)(request.form['course'])).lower()
-    ret = query_count_course_unanswered(course=course)
-    print('Log: Course={} has {} unanswered questions'.format(ret, course))
+    ret = count_tutor_questions(t_id=current_user.id, course=course)
+    print('Log: TUTOR-{} has {} unanswered questions in COURSE-{}'.format(current_user.id, ret, course))
     return ret
+
 
 # Fetch ALL unanswered question in the user_questions DB for the specific course
 @app.route('/academic/api/v1/tutor/course-unanswered-questions', methods=['POST'])
 # @login_required
 def get_course_unanswered_posts():
     course = ((str)(request.form['course'])).lower()
-    ret = query_course_unanswered_posts(course=course)
+    ret = query_tutor_questions(t_id=current_user.id, course=course)
     print('Log: Course-{}\'s unanswered-questions:\n{}'.format(course, ret))
     js_data = json.dumps(ret)
     return js_data
@@ -305,7 +331,8 @@ def tutor_course_handler(course):
         return redirect(url_for('error_404'))
 
     print('v1/{}/tutor: redirecting the tutor-main..'.format(course))
-    return render_template("tutor-main-v1.html", name=current_user.username, course=course)
+    return render_template("tutor/tutor-main-v1.html", name=current_user.username, course=course)
+
 
 # Tutor's Academic Dashboard Redirection
 @app.route('/academic_dash')
@@ -329,7 +356,8 @@ def academic_dash():
 @app.route('/tutor/academic/dashboard')
 @login_required
 def tutor_dash_redirect():
-    return render_template('tutor_academic_dash.html', name=current_user.username)
+    return render_template('tutor/tutor_academic_dash.html', name=current_user.username)
+
 
 ######################################################################
 #
@@ -340,7 +368,8 @@ def tutor_dash_redirect():
 @app.route('/student/academic/dashboard')
 @login_required
 def student_dash_redirect():
-    return render_template('student_academic_dash.html', name=current_user.username)
+    return render_template('student/student_academic_dash.html', name=current_user.username)
+
 
 # Direct STUDENT to the Q&A page, if & only if the course is offered
 @app.route('/academic/api/v1/<course>/help', methods=['GET', 'POST'])
@@ -355,10 +384,10 @@ def student_course_handler(course):
             return redirect(url_for('error_404'))
             # TODO: Error handling should be improve
 
-        return render_template("academic-main-v2.html", name=current_user.username, course=course)
-
+        return render_template("student/academic-main-v2.html", name=current_user.username, course=course)
     else:
         return redirect(url_for('error_404'))
+
 
 # Extract values from wit response
 def parse_arg_from_wit(response):
@@ -380,7 +409,6 @@ def parse_arg_from_wit(response):
         errors = entities['error:error']
         for error in errors:
             e_content.append(error['value'])
-    # print(p_content, s_content, e_content)
     return p_content, s_content, e_content
 
 
@@ -389,7 +417,6 @@ def parse_arg_from_wit(response):
 @login_required
 def get_answer_handler():
     # course = courses_offered[request.form['course']]
-
     course = ((str)(request.form['course'])).upper()
     question = request.form['question']
     print('Getting answer for [course:{}]\n\tQuestion: {}'.format(course, question))
@@ -404,21 +431,58 @@ def get_answer_handler():
         response = requests.get(url=url, headers=headers)
 
         problems, subjects, errors = parse_arg_from_wit(response.text)
+        print('\tp={}, s={}, e={}'.format(problems,subjects, errors))
         answer = get_answer(course, problems, subjects, errors)
         print('Log: get_answer_handler() - knowledge retrieved: {}'.format(answer))
         if answer:
-            return answer
+            session['course'] = course
+            session['problem'] = question
+            session['answer'] = answer
+            return answer, 208
         else:
             insert_question(uid=current_user.id, course=course, problem=question)
-            return 'Sorry, answer is not available. Please wait for a tutor to answer.'
+            return 'Sorry, answer is not available. This question has been recorded. ' + \
+                   'Please wait for a tutor to answer.', 201
     else:
         # TODO: Error handling should be improve
         # TODO: log current action
         print('ERROR: [course:{}] does not exist in the system'.format(course))
         return "Some errors occurred!"
 
+@app.route('/academic/api/v1/bot-answer-feedback', methods=['POST'])
+@login_required
+def submit_bot_answer_feedback():
+    feedback = str(request.form['feedback']).lower()
+    print('Log: submit_bot_answer_feedback() - feedback = {}'.format(feedback))
+    if feedback == 'satisfied':
+        # TODO: insert question to user_question with a bot tutor id
+        insert_question(uid=BOT_ID,
+                        course=session['course'], problem=session['problem'], answer=session['answer'])
+        print('\t- question inserted as bot response')
+        return "Success", 200
+
+        pass
+    else:
+        insert_question(uid=current_user.id,
+                        course=session['course'], problem=session['problem'])
+
+        new_q = {
+            'course': session['course'],
+            'question': session['problem'],
+            'answer': session['answer']
+        }
+        j_str = json.dumps(new_q) + ',\n'
+        # print(j_str)
+
+        _write_to_file(fname='docs/unsatisfied_answers.txt', type='a+', content=j_str)
+
+        print('\t- question inserted as new question')
+        return "Question saved", 201
+        pass
+
+
 @app.route('/academic/api/v1/count-unanswered', methods=['POST'])
-# @login_required
+@login_required
 def get_unanswered_count():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -427,7 +491,7 @@ def get_unanswered_count():
     return ret
 
 @app.route('/academic/api/v1/count-unread', methods=['POST'])
-# @login_required
+@login_required
 def get_unread_count():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -435,9 +499,22 @@ def get_unread_count():
     print('Log: User-{} has {} unread questions for [course={}]'.format(uid, ret, course))
     return ret
 
+@app.route('/academic/api/v1/posts/answered', methods=['POST'])
+@login_required
+def get_answered_posts():
+    course = ((str)(request.form['course'])).lower()
+    time_min = datetime.datetime.now() - datetime.timedelta(weeks=2)
+    time = session['last_login'] if 'last_login' in session and pd.to_datetime(session['last_login']) < time_min else time_min
+    # print('time: ', time)
+
+    ret = UQ.query_course_answered_posts(course=course, time=time)
+    print('Log: Answered-posts for [COURSE-{}]:\n{}\n\n'.format(course, ret))
+    js_data = json.dumps(ret)
+    return js_data
+    pass
 
 @app.route('/academic/api/v1/posts/unanswered', methods=['POST'])
-# @login_required
+@login_required
 def get_unanswered_posts():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -446,8 +523,9 @@ def get_unanswered_posts():
     js_data = json.dumps(ret)
     return js_data
 
+
 @app.route('/academic/api/v1/posts/unread', methods=['POST'])
-# @login_required
+@login_required
 def get_unread_posts():
     uid = current_user.id
     course = ((str)(request.form['course'])).lower()
@@ -456,20 +534,79 @@ def get_unread_posts():
     js_data = json.dumps(ret)
     return js_data
 
+@app.route('/academic/api/v1/get/question/current-qid', methods=['GET','POST'])
+@login_required
+def get_question_by_qid():
+    if 'qid' in session:
+        qid = session['qid']
 
-# @app.route('/academic/api/v1/major-courses', methods=['POST'])
-# @login_required
-# def get_major_courses():
-#     # major = request.data['major']
-#     # print(major)
-#     js_data = request.get_json()
-#     major = (str)(js_data["major"])
-#     matched_data = list(filter(lambda c: c['major'] == major, major_courses))
-#     res = []
-#     for d in matched_data:
-#         res.append(d['course'])
-#
-#     return jsonify({"courses": res})
+        print('Log: get_question_by_qid() User-{} getting question-{}'.format(current_user.id, qid))
+        data = query_question_by_id(qid=session['qid'])
+        # course = data[0]
+        question = data[1]
+        answer = data[2]
+        response = {
+            "id": qid,
+            "question": question,
+            "answer": answer
+        }
+        return response
+    else:
+        return "Something Failed"
+
+
+
+@app.route('/academic/api/v1/set/current-qid', methods=['POST'])
+@login_required
+def set_current_qid():
+    qid = (int)(request.form['qid'])
+    session['qid'] = qid
+    print('Log: User-{}\'s current qid is set as {}'.format(current_user.id, qid))
+    return ("Current qid is set as " + (str)(qid))
+
+
+# else:
+#     # TODO: Improve error handling
+#     abort(404, description="Resource not found")
+
+@app.route('/academic/api/v1/post/unread-feedback', methods=['POST'])
+@login_required
+def unread_post_feedback_handler():
+    if 'qid' in session:
+        feedback = request.form['feedback'].lower().strip()
+        print('Log: User-{}\'s feedback for qid-{} is {}'.format(current_user.id, session['qid'], feedback))
+
+        print('[{}]'.format(feedback))
+        if feedback == 'satisfied':
+            # TODO: implement this query statement in user-question.py
+            print(set_question_status(has_seen=1, id=session['qid']))
+            data = query_question_by_id(qid=session['qid'])
+            course = data[0]
+            question = data[1]
+            answer = data[2]
+
+            new_q = {
+                'course': course,
+                'question': question,
+                'answer': answer
+            }
+            j_str = json.dumps(new_q)+',\n'
+            # print(j_str)
+            _write_to_file(fname='docs/new_knowledge.txt', type='a+', content=j_str)
+        else:
+            set_question_status(has_answered=0, id=session['qid'])
+            print(" log: Question-{}'s answer and status has been reset".format(session['qid']))
+            pass
+
+        return "Feedback has been successfully handled"
+    else:
+        print('Resource[\'qid\'] not found')
+        # TODO: Improve error handling
+        abort(404, description="Resource['qid'] not found")
+
+def _write_to_file(fname=None, type=None, content=None):
+    with open(fname, type) as f:
+        f.write(content)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='127.0.0.1', port=6868)

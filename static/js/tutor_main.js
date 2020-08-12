@@ -5,20 +5,73 @@ var course = pathName[4].toString();
 var unansweredBtn = document.getElementById("unanswered-questions-text")
 var unansweredCount = document.getElementById("unanswered-questions-count");
 
-var incomingQuestions = document.getElementById("unanwered-questions");
+var questionBox = document.getElementById("tutor-question");
+var answerBox = document.getElementById("tutor-answer");
 
-var answerBox = document.getElementById("tutor-answer-box");
 
-window.onload = function() {
+$("#unanswered-questions").on("click", "tr", function (event) {
+    // > td.post-content
+    var post = $(this)
+    var qid = post.children("td:first-child").text().substring(1);
+    var qText = post.children(".post-content").text();
+    console.log("unread-posts click", qid, qText);
+
+    var settings = {
+        "url": "/academic/api/v1/set/current-qid",
+        "method": "POST",
+        "timeout": 0,
+        "data": {
+            "qid": qid
+        }
+    }
+    console.log("count_unanswered() settings: ", settings);
+    $.ajax(settings).done(function (response) {
+        console.log(response);
+    });
+
+    $("#unansweredQuestionsModal").modal("hide");
+    questionBox.value = qText;
+
+
+});
+
+
+window.onload = function () {
     console.log("Loading page...");
     get_course_unanswered_count(course);
 }
 
-unansweredBtn.onclick = function() {
+unansweredBtn.onclick = function () {
     console.log("unansweredBtn is clicked");
     $("#unanswered-questions").empty();
     get_course_unanswered_questions(course);
 }
+
+function submitAnswer() {
+    var tutorAnswer = $("#tutor-answer").val();
+
+    console.log("Submitting Answer...", tutorAnswer);
+
+    var settings = {
+        "url": "/academic/api/v1/tutor/answer",
+        "method": "POST",
+        "timeout": 0,
+        "data": {
+            "course": course,
+            "answer": tutorAnswer
+        }
+    };
+
+    console.log("submitAnswer() settings: ", settings);
+    $.ajax(settings).done(function (response) {
+        console.log(response);
+        alert("Answer successfully submit");
+        questionBox.value = "";
+        answerBox.value = "";
+        get_course_unanswered_count(course);
+    });
+}
+
 
 function get_course_unanswered_questions(course) {
     console.log("get_course_unanswered_questions", course);
@@ -35,11 +88,11 @@ function get_course_unanswered_questions(course) {
         var r_js = JSON.parse(response);
         var r_len = r_js.length;
         for (let i = 0; i < r_len; i++) {
-            console.log("i", r_js[i]);
+            // console.log("i", r_js[i]);
 
             var post = "<tr>\n" +
-                "<td>#" + (i+1) + "</td>\n" +
-                " <td>" + r_js[i]['post'] + "\n" +
+                "<td>#" + r_js[i]['qid'] + "</td>\n" +
+                " <td class=\"post-content\">" + r_js[i]['post'] + "\n" +
                 " </td>\n" +
                 "</tr>";
             console.log(post);
@@ -65,7 +118,4 @@ function get_course_unanswered_count(course) {
     });
 }
 
-function submitAnswer(){
-    console.log("Submitting Answer...");
-}
 
