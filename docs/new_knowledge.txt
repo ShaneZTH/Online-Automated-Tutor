@@ -2,3 +2,4 @@
 {"course": "cse109", "question": "How do we use hashmap for lab2?", "answer": "answer testing."},
 {"course": "cse109", "question": "Make clean not working", "answer": "try to use make all"},
 {"course": "cse109", "question": "Do we need to store names.txt", "answer": "you don't have to store it."},
+{"course": "cse109", "question": "Cannot SSH to sunlab", "answer": "just wait."},

@@ -231,8 +231,9 @@ def set_question_status(has_answered=None, has_seen=None, id=None):
     else:
         set_str = a_str if a_str else s_str
 
+    c_time = datetime.now()
     queryStr = ("UPDATE user_questions " +
-                " SET " + set_str +
+                " SET timestamp=\"{}\", ".format(c_time) + set_str +
                 " WHERE id = \"{}\";".format(id))
     with engine.connect() as conn:
         results = conn.execute(queryStr)
@@ -362,6 +363,8 @@ def count_unanswered(uid=None, course=None):
             print("\tunanswered result is " + (str)(count))
 
     return (str)(count)
+
+
 
 
 # Insert unanswered question into database
